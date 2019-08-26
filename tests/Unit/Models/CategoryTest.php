@@ -22,7 +22,7 @@ class CategoryTest extends TestCase
     public function testCastAttribute()
     {
         $category = new Category();
-        $cast = ['id' => 'string'];
+        $cast = ['id' => 'string', 'is_active' => 'boolean'];
         $this->assertEquals($cast, $category->getCasts());
     }
 
