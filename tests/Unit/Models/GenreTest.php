@@ -1,0 +1,45 @@
+<?php
+
+namespace Tests\Unit\Models;
+
+use App\Models\Genre;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Tests\TestCase;
+
+class GenreTest extends TestCase
+{
+    
+    public function testFillableAttribute()
+    {
+        $genre = new Genre();
+        $fillable = ['name', 'is_active'];
+        $this->assertEquals($fillable, $genre->getFillable());
+    }
+
+    public function testCastAttribute()
+    {
+        $genre = new Genre();
+        $cast = ['id' => 'int', 'is_active' => 'boolean'];
+        $this->assertEquals($cast, $genre->getCasts());
+    }
+
+    public function testIfUseTraits()
+    {
+        $trais = [SoftDeletes::class];
+        $genreTraits = array_keys(class_uses(Genre::class));
+        $this->assertEquals($trais, $genreTraits);
+    }
+
+    public function testDatesAttribute()
+    {
+        $dates = ['deleted_at', 'created_at', 'updated_at'];
+        $genre = new genre();
+        $genreDates = $genre->getDates();
+
+        foreach ($dates as $date) {
+            $this->assertContains($date, $genreDates);
+        }
+
+        $this->assertCount(count($dates), $genreDates);
+    }
+}
