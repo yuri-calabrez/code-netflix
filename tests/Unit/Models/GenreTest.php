@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Genre;
+use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 
@@ -19,13 +20,13 @@ class GenreTest extends TestCase
     public function testCastAttribute()
     {
         $genre = new Genre();
-        $cast = ['id' => 'int', 'is_active' => 'boolean'];
+        $cast = ['id' => 'string', 'is_active' => 'boolean'];
         $this->assertEquals($cast, $genre->getCasts());
     }
 
     public function testIfUseTraits()
     {
-        $trais = [SoftDeletes::class];
+        $trais = [SoftDeletes::class, UuidTrait::class];
         $genreTraits = array_keys(class_uses(Genre::class));
         $this->assertEquals($trais, $genreTraits);
     }

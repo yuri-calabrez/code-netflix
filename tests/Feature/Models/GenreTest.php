@@ -37,6 +37,8 @@ class GenreTest extends TestCase
 
         $this->assertEquals('test1', $genre->name);
         $this->assertTrue($genre->is_active);
+        $isUuidValid = preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $genre->id);
+        $this->assertTrue((bool)$isUuidValid);
 
         $genre = Genre::create([
             'name' => 'test1',
