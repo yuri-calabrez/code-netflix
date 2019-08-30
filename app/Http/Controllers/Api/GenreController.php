@@ -20,7 +20,7 @@ class GenreController extends Controller
      */
     public function index()
     {
-        return Genre::paginate();
+        return Genre::all();
     }
 
 
@@ -34,7 +34,9 @@ class GenreController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, $this->rules);
-        return Genre::create($request->all());
+        $genre = Genre::create($request->all());
+        $genre->refresh();
+        return $genre;
     }
 
     /**
