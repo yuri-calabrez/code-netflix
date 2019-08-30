@@ -88,4 +88,87 @@ class CategoryControllerTest extends TestCase
                 \Lang::trans('validation.boolean', ['attribute' => 'is active'])
             ]);
     }
+
+    public function testStore()
+    {
+        $response = $this->json('POST', route('categories.store'), [
+            'name' => 'test'
+        ]);
+
+        $id = $response->json('id');
+        $category = Category::find($id);
+
+        $response
+            ->assertStatus(201)
+            ->assertJson($category->toArray());
+
+        $this->assertTrue($response->json('is_active'));
+        $this->assertNull($response->json('description'));
+
+        $response = $this->json('POST', route('categories.store'), [
+            'name' => 'test',
+            'is_active' => false,
+            'description' => 'desc'
+        ]);
+
+        $response->assertJsonFragment([
+            'is_active' => false,
+            'description' => 'desc'
+        ]);
+    }
+
+    public function testUpdate()
+    {
+        $category = factory(Category::class)->create([
+            'description' => 'desc',
+            'is_active' => false
+        ]);
+
+        $response = $this->json('PUT', route('categories.update', ['category' => $category->id]), [
+            'name' => 'name1',
+            'description' => 'desc1',
+            'is_active' => true
+        ]);
+
+        $id = $response->json('id');
+        $category = Category::find($id);
+
+        $response
+            ->assertStatus(200)
+            ->assertJson($category->toArray())
+            ->assertJsonFragment([
+                'description' => 'desc1',
+                'is_active' => true
+            ]);
+
+        $response = $this->json('PUT', route('categories.update', ['category' => $category->id]), [
+            'name' => 'name1',
+            'description' => '',
+        ]);
+
+        $response->assertJsonFragment([
+            'description' => null
+        ]);
+        
+        $category->description = 'test1';
+        $category->save();
+
+        $response = $this->json('PUT', route('categories.update', ['category' => $category->id]), [
+            'name' => 'name1',
+            'description' => null,
+        ]);
+
+        $response->assertJsonFragment([
+            'description' => null
+        ]);
+    }
+
+    public function testDelete()
+    {
+        $category = factory(Category::class)->create();
+
+        $response = $this->json('DELETE', route('categories.destroy', ['category' => $category->id]));
+
+        $response->assertStatus(204);
+    }
 }
