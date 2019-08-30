@@ -12,7 +12,7 @@ steps:
   name: 'gcr.io/cloud-builders/docker'
   args: ['exec', '-t', 'app', 'cp', '.env.example', '.env']
 
-  - id: "Copiando .env.testing"
+- id: "Copiando .env.testing"
   name: 'gcr.io/cloud-builders/docker'
   args: ['exec', '-t', 'app', 'cp', '.env.testing.example', '.env.testing']
 
