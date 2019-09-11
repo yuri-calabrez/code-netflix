@@ -88,7 +88,7 @@ class GenreControllerTest extends TestCase
         return route('genres.update', ['genre' => $this->genre->id]);
     }
 
-    protected function getModel()
+    protected function model()
     {
         return Genre::class;
     }
