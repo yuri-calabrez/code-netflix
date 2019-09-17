@@ -62,6 +62,36 @@ class BasicCrudControllerTest extends TestCase
         $this->assertEquals(CategoryStub::find(1)->toArray(), $obj->toArray());
     }
 
+    public function testShow()
+    {
+        $category = CategoryStub::create(['name' => 'name_test', 'description' => 'description_test']);
+        $obj = $this->controller->show($category->id);
+        $this->assertEquals($category->toArray(), $obj->toArray());
+    }
+
+    public function testUpdate()
+    {
+        $category = CategoryStub::create(['name' => 'test']);
+        $request = \Mockery::mock(Request::class);
+        $request
+            ->shouldReceive('all')
+            ->once()
+            ->andReturn(['name' => 'test name']);
+
+        $obj = $this->controller->update($request, $category->id);
+    }
+
+    /**
+     * @expectedException \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function testDestroy()
+    {
+        $category = CategoryStub::create(['name' => 'test']);
+        $this->controller->destroy($category->id);
+
+        $this->controller->show($category->id);
+    }
+
     public function testIfFindOrFailFetchModel()
     {
         $category = CategoryStub::create(['name' => 'name_test', 'description' => 'description_test']);
