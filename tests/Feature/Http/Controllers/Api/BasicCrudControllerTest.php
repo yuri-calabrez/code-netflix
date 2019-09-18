@@ -71,14 +71,15 @@ class BasicCrudControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $category = CategoryStub::create(['name' => 'test']);
+        $category = CategoryStub::create(['name' => 'test', 'description' => 'test description']);
         $request = \Mockery::mock(Request::class);
         $request
             ->shouldReceive('all')
             ->once()
-            ->andReturn(['name' => 'test name']);
+            ->andReturn(['name' => 'name updated', 'description' => 'description updated']);
 
-        $obj = $this->controller->update($request, $category->id);
+        $result = $this->controller->update($request, $category->id);
+        $this->assertEquals($result->toArray(), CategoryStub::find(1)->toArray());
     }
 
     /**

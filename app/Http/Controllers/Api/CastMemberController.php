@@ -20,7 +20,7 @@ class CastMemberController extends BasicCrudController
     {
         return [
             'name' => 'required|max:255',
-            'type' => 'required|numeric|in:1,2'
+            'type' => 'required|numeric|in:'.implode(',', [CastMember::TYPE_DIRECTOR, CastMember::TYPE_ACTOR])
         ];
     }
 }
