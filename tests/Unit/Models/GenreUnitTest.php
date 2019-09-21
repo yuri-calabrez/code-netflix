@@ -34,7 +34,7 @@ class GenreUnitTest extends TestCase
     public function testDatesAttribute()
     {
         $dates = ['deleted_at', 'created_at', 'updated_at'];
-        $genre = new genre();
+        $genre = new Genre();
         $genreDates = $genre->getDates();
 
         foreach ($dates as $date) {
