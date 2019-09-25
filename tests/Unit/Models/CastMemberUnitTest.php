@@ -7,7 +7,7 @@ use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 
-class CastMemberTest extends TestCase
+class CastMemberUnitTest extends TestCase
 {
     
     public function testFillableAttribute()

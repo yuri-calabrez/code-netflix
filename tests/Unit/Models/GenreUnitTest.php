@@ -7,7 +7,7 @@ use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 
-class GenreTest extends TestCase
+class GenreUnitTest extends TestCase
 {
     
     public function testFillableAttribute()
@@ -34,7 +34,7 @@ class GenreTest extends TestCase
     public function testDatesAttribute()
     {
         $dates = ['deleted_at', 'created_at', 'updated_at'];
-        $genre = new genre();
+        $genre = new Genre();
         $genreDates = $genre->getDates();
 
         foreach ($dates as $date) {

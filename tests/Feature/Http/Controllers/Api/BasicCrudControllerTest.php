@@ -3,10 +3,12 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\BasicCrudController;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Stubs\Controllers\CategoryControllerStub;
 use Tests\Stubs\Models\CategoryStub;
 use Tests\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use ReflectionClass;
 
 class BasicCrudControllerTest extends TestCase
@@ -35,11 +37,11 @@ class BasicCrudControllerTest extends TestCase
 
     }
 
-    /**
-     * @expectedException \Illuminate\Validation\ValidationException
-     */
+  
     public function testInvalidationData()
     {
+        $this->expectException(ValidationException::class);
+
         $request = \Mockery::mock(Request::class);
         $request
             ->shouldReceive('all')
@@ -82,11 +84,11 @@ class BasicCrudControllerTest extends TestCase
         $this->assertEquals($result->toArray(), CategoryStub::find(1)->toArray());
     }
 
-    /**
-     * @expectedException \Illuminate\Database\Eloquent\ModelNotFoundException
-     */
+
     public function testDestroy()
     {
+        $this->expectException(ModelNotFoundException::class);
+
         $category = CategoryStub::create(['name' => 'test']);
         $this->controller->destroy($category->id);
 
@@ -105,11 +107,11 @@ class BasicCrudControllerTest extends TestCase
         $this->assertInstanceOf(CategoryStub::class, $result);
     }
 
-     /**
-     * @expectedException \Illuminate\Database\Eloquent\ModelNotFoundException
-     */
+ 
     public function testIfFindOrFailThrowExceptionWhenIdIsInvalid()
     {
+        $this->expectException(ModelNotFoundException::class);
+
         $reflectionClass = new ReflectionClass(BasicCrudController::class);
         $reflectionMethod = $reflectionClass->getMethod('findOrFail');
         $reflectionMethod->setAccessible(true);
