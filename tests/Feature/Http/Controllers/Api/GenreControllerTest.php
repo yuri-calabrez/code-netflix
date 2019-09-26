@@ -163,6 +163,23 @@ class GenreControllerTest extends TestCase
 
     }
 
+    public function testSyncCategories()
+    {
+        $categoriesId = factory(Category::class, 2)->create()->pluck('id')->toArray();
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->sync($categoriesId);
+       
+        $this->assertDatabaseHas('category_genre', [
+            'genre_id' => $genre->id,
+            'category_id' => $categoriesId[0]
+        ]);
+
+        $this->assertDatabaseHas('category_genre', [
+            'genre_id' => $genre->id,
+            'category_id' => $categoriesId[1]
+        ]);
+    }
+
     public function testDelete()
     {
         $response = $this->json('DELETE', route('genres.destroy', ['genre' => $this->genre->id]));
