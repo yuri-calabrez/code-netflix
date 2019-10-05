@@ -3,6 +3,7 @@
 namespace Tests\Feature\Models;
 
 use App\Models\Video;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -81,5 +82,49 @@ class VideoTest extends TestCase
     {
         $video = factory(Video::class)->create()->first();
         $this->assertTrue($video->delete());
+    }
+
+    public function testRollbackCreate()
+    {
+        $hasError = false;
+        try {
+            Video::create([
+                'title' => 'test1',
+                'description' => 'desc',
+                'year_launched' => 2018,
+                'opened' => true,
+                'rating' => 'L',
+                'duration' => 125,
+                'categories_id' => [0, 1, 2]
+            ]);
+    
+        } catch (QueryException $e) {
+            $this->assertCount(0, Video::all());
+            $hasError = true;
+        }
+        $this->assertTrue($hasError);
+    }
+
+    public function testRollbackUpdate()
+    {
+        $video = factory(Video::class)->create();
+        $oldTitle = $video->title;
+        $hasError = false;
+        try {
+            $video->update([
+                'title' => 'test1',
+                'description' => 'desc',
+                'year_launched' => 2018,
+                'opened' => true,
+                'rating' => 'L',
+                'duration' => 125,
+                'categories_id' => [0, 1, 2]
+            ]);
+        } catch (QueryException $e) {
+            $this->assertDatabaseHas('videos', ['title' => $oldTitle]);
+            $hasError = true;
+        }
+        $this->assertTrue($hasError);
+
     }
 }
