@@ -288,7 +288,7 @@ class VideoControllerTest extends TestCase
         $this->assertNotNull(Video::withTrashed()->find($this->video->id));
     }
 
-    public function testSyncCategories()
+    /*public function testSyncCategories()
     {
         $categoriesId = factory(Category::class, 3)->create()->pluck('id')->toArray();
         $genre = factory(Genre::class)->create();
@@ -352,7 +352,7 @@ class VideoControllerTest extends TestCase
             'genre_id' => $genresId[2],
             'video_id' => $response->json('id')
         ]);
-    }
+    }*/
 
     protected function routeStore()
     {
