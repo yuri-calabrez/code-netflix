@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\VideoController;
 use App\Models\{Category, Genre, Video};
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Tests\Traits\{TestSaves, TestValidations};
@@ -106,6 +107,23 @@ class VideoControllerTest extends TestCase
 
     }
 
+    public function testInvalidationVideoUploadType()
+    {
+        $file = UploadedFile::fake()->create('test.img');
+        $data = ['video_file' => $file];
+        $this->assertInvalidationInStoreAction($data, 'mimetypes', ['values' => 'video/mp4']);
+        $this->assertInvalidationInUpdateAction($data, 'mimetypes', ['values' => 'video/mp4']);
+    }
+
+    public function testInvalidationVideoUploadSize()
+    {
+        $file = UploadedFile::fake()->create('test.mp4')->size(20000);
+        $data = ['video_file' => $file];
+        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => Video::MAX_VIDEO_SIZE]);
+        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => Video::MAX_VIDEO_SIZE]);
+
+    }
+
     public function testInvalidationCategoriesIdField()
     {
         $data = [
@@ -201,6 +219,22 @@ class VideoControllerTest extends TestCase
            'genre_id' => $genreId,
            'video_id' => $videoId
        ]);
+    }
+
+    public function testStoreWithVideoUpload()
+    {
+        $category = factory(Category::class)->create();
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->sync($category->id);
+
+        \Storage::fake();
+        $file = UploadedFile::fake()->create('test.mp4');
+        $response = $this->json('POST', $this->routeStore(), $this->sendData + [
+            'categories_id' => [$category->id],
+            'genres_id' => [$genre->id],
+            'video_file' => $file
+        ]);
+        \Storage::assertExists("{$response->json('id')}/{$file->hashName()}");
     }
 
     /*public function testRollbackStore()

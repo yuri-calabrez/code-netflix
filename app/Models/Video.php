@@ -12,6 +12,8 @@ class Video extends Model
 
     const RATING_LIST = ['L', '10', '12', '14', '16', '18'];
 
+    const MAX_VIDEO_SIZE = 10000;
+
     protected $fillable = [
         'title',
         'description',
