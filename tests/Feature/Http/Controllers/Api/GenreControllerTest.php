@@ -68,6 +68,14 @@ class GenreControllerTest extends TestCase
         ];
         $this->assertInvalidationInStoreAction($data, 'exists');
         $this->assertInvalidationInUpdateAction($data, 'exists');
+
+        $category = factory(Category::class)->create();
+        $category->delete();
+        $data = [
+            'categories_id' => [$category->id]
+        ];
+        $this->assertInvalidationInStoreAction($data, 'exists');
+        $this->assertInvalidationInUpdateAction($data, 'exists');
     }
 
     public function testStore()
@@ -105,11 +113,15 @@ class GenreControllerTest extends TestCase
             ->once()
             ->andThrow(new TestException());
 
+        $hasError = false;
         try {
             $controller->store($request);
         } catch (TestException $e) {
             $this->assertCount(1, Genre::all());
+            $hasError = true;
         }
+
+        $this->assertTrue($hasError);
 
     }
 
@@ -155,11 +167,15 @@ class GenreControllerTest extends TestCase
             ->once()
             ->andThrow(new TestException());
 
+        $hasError = false;
         try {
             $controller->update($request, 1);
         } catch (TestException $e) {
             $this->assertCount(1, Genre::all());
+            $hasError = true;
         }
+
+        $this->assertTrue($hasError);
 
     }
 
@@ -207,6 +223,7 @@ class GenreControllerTest extends TestCase
         $response = $this->json('DELETE', route('genres.destroy', ['genre' => $this->genre->id]));
         $response->assertStatus(204);
     }
+
 
     protected function assertRelation($genreId, $categoryId)
     {
