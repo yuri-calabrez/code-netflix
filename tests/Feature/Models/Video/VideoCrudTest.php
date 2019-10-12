@@ -1,31 +1,13 @@
 <?php
 
-namespace Tests\Feature\Models;
+namespace Tests\Feature\Models\Video;
 
 use App\Models\{Category, Genre, Video};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class VideoTest extends TestCase
+class VideoTest extends BaseVideoCrudTest
 {
-    use DatabaseMigrations;
-
-    private $data;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->data = [
-            'title' => 'test1',
-            'description' => 'desc',
-            'year_launched' => 2018,
-            'rating' => Video::RATING_LIST[0],
-            'duration' => 125
-        ];
-    }
 
     public function testList()
     {
