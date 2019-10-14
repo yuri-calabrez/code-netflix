@@ -9,6 +9,16 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class VideoTest extends BaseVideoCrudTest
 {
 
+    private $fileFieldsData = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        foreach (Video::$fileFields as $field) {
+            $this->fileFieldsData[$field] = "$field.test";
+        }
+    }
+
     public function testList()
     {
         factory(Video::class, 1)->create();
@@ -24,6 +34,7 @@ class VideoTest extends BaseVideoCrudTest
             'rating',
             'duration',
             'video_file',
+            'thumb_file',
             'created_at',
             'updated_at',
             'deleted_at'
@@ -32,14 +43,14 @@ class VideoTest extends BaseVideoCrudTest
 
     public function testCreateWithBasicFields()
     {
-        $video = Video::create($this->data);
+        $video = Video::create($this->data + $this->fileFieldsData);
         $video->refresh();
 
         $this->assertEquals('test1', $video->title);
         $isUuidValid = preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $video->id);
         $this->assertTrue((bool)$isUuidValid);
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', ['opened' => false]);
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFieldsData + ['opened' => false]);
 
         $video = Video::create($this->data + ['opened' => true]);
         $this->assertTrue($video->opened);
@@ -64,14 +75,14 @@ class VideoTest extends BaseVideoCrudTest
         $video = factory(Video::class)->create([
             'opened' => false
         ]);
-        $video->update($this->data);
+        $video->update($this->data + $this->fileFieldsData);
         $this->assertFalse($video->opened);
-        $this->assertDatabaseHas('videos', ['opened' => false]);    
+        $this->assertDatabaseHas('videos', $this->data + $this->fileFieldsData + ['opened' => false]);    
         
         $video = factory(Video::class)->create([
             'opened' => false
         ]);
-        $video->update($this->data + ['opened' => true]);
+        $video->update($this->data + $this->fileFieldsData + ['opened' => true]);
         $this->assertTrue($video->opened);
         $this->assertDatabaseHas('videos', ['opened' => true]); 
     }
