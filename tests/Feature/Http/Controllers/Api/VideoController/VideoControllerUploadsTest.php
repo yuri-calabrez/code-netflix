@@ -49,7 +49,7 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         
     }
 
-    /*public function testUpdateWithVideoUpload()
+    public function testUpdateWithVideoUpload()
     {
         $category = factory(Category::class)->create();
         $genre = factory(Genre::class)->create();
@@ -69,7 +69,7 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
             \Storage::assertExists("{$id}/{$file->hashName()}");
         }
         
-    }*/
+    }
 
     protected function getFiles()
     {

@@ -20,8 +20,8 @@ class UploadFileTest extends TestCase
         UploadFileStub::makeTable();
     }
 
-    //TODO: Verificar o pq não esta funcionndo
-    /*public function testMakeOldFilesOnSaving()
+
+    public function testMakeOldFilesOnSaving()
     {
         $this->obj->fill([
             'name' => 'test',
@@ -38,7 +38,7 @@ class UploadFileTest extends TestCase
         ]);
 
         $this->assertEqualsCanonicalizing(['test2.mp4'], $this->obj->oldFiles);
-    }*/
+    }
 
     public function testMakeOldFilesNullOnSave()
     {
