@@ -20,10 +20,25 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
 
     public function testInvalidationVideoUploadSize()
     {
-        $file = UploadedFile::fake()->create('test.mp4')->size(20000);
+        $file = UploadedFile::fake()->create('test.mp4')->size(Video::MAX_VIDEO_SIZE + 1);
         $data = ['video_file' => $file];
         $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => Video::MAX_VIDEO_SIZE]);
         $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => Video::MAX_VIDEO_SIZE]);
+
+        $file = UploadedFile::fake()->create('test.jpg')->size(Video::MAX_THUMB_SIZE + 1);
+        $data = ['thumb_file' => $file];
+        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => Video::MAX_THUMB_SIZE]);
+        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => Video::MAX_THUMB_SIZE]);
+
+        $file = UploadedFile::fake()->create('trailer.mp4')->size(Video::MAX_TRAILER_SIZE + 1);
+        $data = ['trailer_file' => $file];
+        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => Video::MAX_TRAILER_SIZE]);
+        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => Video::MAX_TRAILER_SIZE]);
+
+        $file = UploadedFile::fake()->create('banner.jpg')->size(Video::MAX_BANNER_SIZE + 1);
+        $data = ['banner_file' => $file];
+        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => Video::MAX_BANNER_SIZE]);
+        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => Video::MAX_BANNER_SIZE]);
 
     }
 

@@ -15,11 +15,15 @@ class VideoUploadTest extends BaseVideoCrudTest
         $video = Video::create(
             $this->data + [
                 'thumb_file' => UploadedFile::fake()->image('image.jpg'),
-                'video_file' => UploadedFile::fake()->image('video.mp4')
+                'video_file' => UploadedFile::fake()->image('video.mp4'),
+                'trailer_file' => UploadedFile::fake()->image('trailer.mp4'),
+                'banner_file' => UploadedFile::fake()->image('banner.jpg')
             ]
         );
         \Storage::assertExists("{$video->id}/$video->thumb_file");
         \Storage::assertExists("{$video->id}/$video->video_file");
+        \Storage::assertExists("{$video->id}/$video->trailer_file");
+        \Storage::assertExists("{$video->id}/$video->banner_file");
     }
 
     public function testCreateWithRollbackFiles()
@@ -34,7 +38,9 @@ class VideoUploadTest extends BaseVideoCrudTest
             Video::create(
                 $this->data + [
                     'thumb_file' => UploadedFile::fake()->image('image.jpg'),
-                    'video_file' => UploadedFile::fake()->image('video.mp4')
+                    'video_file' => UploadedFile::fake()->image('video.mp4'),
+                    'trailer_file' => UploadedFile::fake()->image('trailer.mp4'),
+                    'banner_file' => UploadedFile::fake()->image('banner.jpg')
                 ]
             );
         } catch (TestException $e) {
@@ -51,18 +57,27 @@ class VideoUploadTest extends BaseVideoCrudTest
         $video = factory(Video::class)->create();
         $thumbFile = UploadedFile::fake()->image('thumb.jpg');
         $videoFile = UploadedFile::fake()->create('video.mp4');
+        $trailerFile = UploadedFile::fake()->create('trailer.mp4');
+        $bannerFile = UploadedFile::fake()->create('banner.jpg');
         $video->update($this->data + [
             'thumb_file' => $thumbFile,
-            'video_file' => $videoFile
+            'video_file' => $videoFile,
+            'trailer_file' => $trailerFile,
+            'banner_file' => $bannerFile
         ]);
         \Storage::assertExists("{$video->id}/$video->thumb_file");
         \Storage::assertExists("{$video->id}/$video->video_file");
+        \Storage::assertExists("{$video->id}/$video->trailer_file");
+        \Storage::assertExists("{$video->id}/$video->banner_file");
 
         $newVideoFile = UploadedFile::fake()->create('video2.mp4');
-        $video->update($this->data + ['video_file' => $newVideoFile]);
+        $newBannerFile = UploadedFile::fake()->create('banner2.jpg');
+        $video->update($this->data + ['video_file' => $newVideoFile, 'banner_file' => $newBannerFile]);
         \Storage::assertExists("{$video->id}/{$thumbFile->hashName()}");
         \Storage::assertExists("{$video->id}/{$newVideoFile->hashName()}");
+        \Storage::assertExists("{$video->id}/{$newBannerFile->hashName()}");
         \Storage::assertMissing("{$video->id}/{$videoFile->hashName()}");
+        \Storage::assertMissing("{$video->id}/{$bannerFile->hashName()}");
     }
 
     public function testUpdateWithRollbackFiles()
@@ -78,7 +93,9 @@ class VideoUploadTest extends BaseVideoCrudTest
            $video->update(
                 $this->data + [
                     'thumb_file' => UploadedFile::fake()->image('image.jpg'),
-                    'video_file' => UploadedFile::fake()->image('video.mp4')
+                    'video_file' => UploadedFile::fake()->image('video.mp4'),
+                    'trailer_file' => UploadedFile::fake()->image('trailer.mp4'),
+                    'banner_file' => UploadedFile::fake()->image('banner.jpg')
                 ]
             );
         } catch (TestException $e) {
