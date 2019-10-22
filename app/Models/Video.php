@@ -12,7 +12,10 @@ class Video extends Model
 
     const RATING_LIST = ['L', '10', '12', '14', '16', '18'];
 
-    const MAX_VIDEO_SIZE = 10000;
+    const MAX_VIDEO_SIZE = 6250000;
+    const MAX_THUMB_SIZE = 5000;
+    const MAX_BANNER_SIZE = 10000;
+    const MAX_TRAILER_SIZE = 125000;
 
     protected $fillable = [
         'title',
@@ -21,7 +24,10 @@ class Video extends Model
         'opened',
         'rating',
         'duration',
-        'video_file'
+        'video_file',
+        'thumb_file',
+        'trailer_file',
+        'banner_file'
     ];
 
     protected $dates = ['deleted_at'];
@@ -35,7 +41,7 @@ class Video extends Model
 
     public $incrementing = false;
     
-    public static $fileFields = ['video_file'];
+    public static $fileFields = ['video_file', 'thumb_file', 'banner_file', 'trailer_file'];
     
     public static function create(array $attributes = [])
     {
@@ -49,7 +55,7 @@ class Video extends Model
             return $obj;
         } catch (\Exception $e) {
             if (isset($obj)) {
-                //TODO: excluir arquivos
+                $obj->deleteFiles($files);
             }
             \DB::rollBack();
             throw $e;
@@ -58,19 +64,22 @@ class Video extends Model
 
     public function update(array $attributes = [], array $options = [])
     {
+        $files = self::extractFiles($attributes);
         try {
             \DB::beginTransaction();
             $saved = parent::update($attributes, $options);
             static::handleRelations($this, $attributes);
             if ($saved) {
-                //TODO: remover videos
-                //TODO: uploads de videos
+                $this->uploadFiles($files);
             }
 
             \DB::commit();
+            if ($saved && count($files)) {
+                $this->deleteOldFiles();
+            }
             return $saved;
         } catch (\Exception $e) {
-            //TODO: excluir arquivos
+            $this->deleteFiles($files);
             \DB::rollBack();
             throw $e;
         }
