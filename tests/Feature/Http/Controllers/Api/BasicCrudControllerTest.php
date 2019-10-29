@@ -33,7 +33,7 @@ class BasicCrudControllerTest extends TestCase
     public function testIndex()
     {
         $category = CategoryStub::create(['name' => 'name_test', 'description' => 'description_test']);
-        $this->assertEquals([$category->toArray()], $this->controller->index()->toArray());
+        $this->assertEquals([$category->toArray()], $this->controller->index()->response()->getData(true)['data']);
 
     }
 
@@ -60,15 +60,15 @@ class BasicCrudControllerTest extends TestCase
             ->andReturn(['name' => 'test name', 'description' => 'test description']);
 
         $obj = $this->controller->store($request);
-
-        $this->assertEquals(CategoryStub::find(1)->toArray(), $obj->toArray());
+        $this->assertEquals(['data' => CategoryStub::find(1)->toArray()], $obj->response()->getData(true));
     }
 
     public function testShow()
     {
         $category = CategoryStub::create(['name' => 'name_test', 'description' => 'description_test']);
+        $request = \Mockery::mock(Request::class);
         $obj = $this->controller->show($category->id);
-        $this->assertEquals($category->toArray(), $obj->toArray());
+        $this->assertEquals(['data' => $category->toArray()], $obj->response()->getData(true));
     }
 
     public function testUpdate()
@@ -81,7 +81,7 @@ class BasicCrudControllerTest extends TestCase
             ->andReturn(['name' => 'name updated', 'description' => 'description updated']);
 
         $result = $this->controller->update($request, $category->id);
-        $this->assertEquals($result->toArray(), CategoryStub::find(1)->toArray());
+        $this->assertEquals($result->response()->getData(true), ['data' => CategoryStub::find(1)->toArray()]);
     }
 
 
