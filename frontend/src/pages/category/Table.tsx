@@ -1,6 +1,9 @@
 import * as React from 'react'
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables'
 import { httpVideo } from '../../util/http'
+import { Chip } from '@material-ui/core'
+import parseISO from 'date-fns/parseISO'
+import format from 'date-fns/format'
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -9,11 +12,21 @@ const columnsDefinition: MUIDataTableColumn[] = [
     },
     {
         name: 'is_active',
-        label: 'Ativo?'
+        label: 'Ativo?',
+        options: {
+            customBodyRender(value, tableMeta, updateValue) {
+                return value ? <Chip label="Sim" color="primary"/> : <Chip label="Não" color="secondary"/>
+            }
+        }
     },
     {
         name: 'created_at',
-        label: 'Criado em'
+        label: 'Criado em',
+        options: {
+            customBodyRender(value, tableMeta, updateValue) {
+            return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
+            }
+        }
     }
 ]
 
@@ -30,7 +43,7 @@ const Table = () => {
 
     React.useEffect(() => {
         httpVideo.get('categories')
-            .then(response => response.data.data)
+            .then(response => setData(response.data.data))
     }, [])
 
     return (
