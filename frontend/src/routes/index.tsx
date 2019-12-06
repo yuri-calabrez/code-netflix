@@ -4,6 +4,7 @@ import CategoryList from "../pages/category/PageList";
 import CategoryCreate from "../pages/category/PageForm";
 import GenreList from '../pages/genre/PageList'
 import CastMemberList from '../pages/cast-member/PageList'
+import CastMemberCreate from "../pages/cast-member/PageForm"
 
 export interface MyRouteProps extends RouteProps {
     name: string
@@ -44,6 +45,13 @@ const routes: MyRouteProps[] = [
         label: 'Listagem membros de elenco',
         path: '/cast-members/list',
         component: CastMemberList,
+        exact: true
+    },
+    {
+        name: 'cast_members.create',
+        label: 'Criar membros de elenco',
+        path: '/cast-members/create',
+        component: CastMemberCreate,
         exact: true
     }
 ]

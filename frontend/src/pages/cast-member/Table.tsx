@@ -1,8 +1,8 @@
 import * as React from 'react'
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables'
-import { httpVideo } from '../../util/http'
 import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
+import castMemberHttp from '../../util/http/cast-member-http'
 
 type castMemberType = {
     [key: number]: string
@@ -43,8 +43,9 @@ const Table = () => {
     const [data, setData] = React.useState([])
 
     React.useEffect(() => {
-        httpVideo.get('cast_members')
-            .then(response => setData(response.data.data))
+        castMemberHttp
+            .list()
+            .then(({data}) => setData(data.data))
     }, [])
 
     return (
