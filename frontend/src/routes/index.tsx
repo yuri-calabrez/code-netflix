@@ -3,6 +3,7 @@ import Dashboard from "../pages/Dashboard";
 import CategoryList from "../pages/category/PageList";
 import CategoryCreate from "../pages/category/PageForm";
 import GenreList from '../pages/genre/PageList'
+import GenreCreate from "../pages/genre/PageForm"
 import CastMemberList from '../pages/cast-member/PageList'
 import CastMemberCreate from "../pages/cast-member/PageForm"
 
@@ -41,15 +42,22 @@ const routes: MyRouteProps[] = [
         exact: true
     },
     {
+        name: 'genres.create',
+        label: 'Criar gêneros',
+        path: '/genres/create',
+        component: GenreCreate,
+        exact: true
+    },
+    {
         name: 'cast_members.list',
-        label: 'Listagem membros de elenco',
+        label: 'Listar membros de elenco',
         path: '/cast-members/list',
         component: CastMemberList,
         exact: true
     },
     {
         name: 'cast_members.create',
-        label: 'Criar membros de elenco',
+        label: 'Adicionar membro de elenco',
         path: '/cast-members/create',
         component: CastMemberCreate,
         exact: true
