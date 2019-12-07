@@ -37,7 +37,7 @@ const routes: MyRouteProps[] = [
     {
         name: 'genres.list',
         label: 'Listar gêneros',
-        path: '/genres/list',
+        path: '/genres',
         component: GenreList,
         exact: true
     },
@@ -51,13 +51,13 @@ const routes: MyRouteProps[] = [
     {
         name: 'cast_members.list',
         label: 'Listar membros de elenco',
-        path: '/cast-members/list',
+        path: '/cast-members',
         component: CastMemberList,
         exact: true
     },
     {
         name: 'cast_members.create',
-        label: 'Adicionar membro de elenco',
+        label: 'Criar membros de elenco',
         path: '/cast-members/create',
         component: CastMemberCreate,
         exact: true
