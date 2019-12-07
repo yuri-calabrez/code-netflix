@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { TextField, Box, Button, makeStyles, Theme, RadioGroup, FormControlLabel, Radio } from '@material-ui/core'
+import { TextField, Box, Button, makeStyles, Theme, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel } from '@material-ui/core'
 import { ButtonProps } from '@material-ui/core/Button'
 import useForm from 'react-hook-form'
 import castMemberHttp from '../../util/http/cast-member-http'
@@ -22,14 +22,15 @@ const Form = () => {
         variant: "outlined"
     }
 
-    const [value, setValue] = React.useState()
+    const {register, handleSubmit, getValues, setValue} = useForm()
 
-    const handleChange = event => setValue(event.target.value)
+    React.useEffect(() => {
+        register({name: 'type'})
+    }, [register])
 
-    const {register, handleSubmit, getValues} = useForm()
+    const handleChange = event => setValue('type', parseInt(event.target.value))
 
     function onSubmit(formData, event) {
-
         castMemberHttp
             .create(formData)
             .then(response => console.log(response.data))
@@ -44,25 +45,26 @@ const Form = () => {
             variant="outlined"
             inputRef={register}
          />
-         <RadioGroup 
-            defaultValue="1" 
-            aria-label="type" 
-            name="type"
-            onChange={handleChange}
-        >
-            <FormControlLabel 
-                value="1" 
-                label="Diretor" 
-                control={<Radio/>}
-                inputRef={register}
-            />
-            <FormControlLabel 
-                value="2"  
-                label="Ator" 
-                control={<Radio/>}
-                inputRef={register}
-            />
-        </RadioGroup>
+         <FormControl margin="normal">
+            <FormLabel component="legend">Tipo</FormLabel>
+            <RadioGroup 
+                defaultValue="1" 
+                aria-label="type" 
+                name="type"
+                onChange={handleChange}
+            >
+                <FormControlLabel 
+                    value="1" 
+                    label="Diretor" 
+                    control={<Radio/>}
+                />
+                <FormControlLabel 
+                    value="2"  
+                    label="Ator" 
+                    control={<Radio/>}
+                />
+            </RadioGroup>
+         </FormControl>
 
         <Box dir="rtl">
             <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
