@@ -3,6 +3,14 @@ import { TextField, Checkbox, Box, Button, makeStyles, Theme } from '@material-u
 import { ButtonProps } from '@material-ui/core/Button'
 import useForm from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
+import * as yup from '../../util/vendor/yup'
+
+const validationSchema = yup.object().shape({
+    name: yup.string()
+        .label('Nome')
+        .required()
+        .max(255)
+})
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
@@ -22,7 +30,8 @@ const Form = () => {
         variant: "contained"
     }
 
-    const {register, handleSubmit, getValues} = useForm({
+    const {register, handleSubmit, getValues, errors} = useForm({
+        validationSchema,
         defaultValues: {
             is_active: true
         }
@@ -44,6 +53,8 @@ const Form = () => {
             fullWidth
             variant="outlined"
             inputRef={register}
+            error={errors.name !== undefined}
+            helperText={errors.name && errors.name.message}
          />
          <TextField
             name="description"

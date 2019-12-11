@@ -1,7 +1,6 @@
 import * as React from 'react'
 import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables'
 import { httpVideo } from '../../util/http'
-import { Chip } from '@material-ui/core'
 import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
 import { BadgeYes, BadgeNo } from '../../components/Badge'
