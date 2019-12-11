@@ -9,10 +9,11 @@ const PageList = () => {
 
     return (
        <Page title="Listagem gêneros">
-           <Box dir="rtl">
+           <Box dir="rtl" paddingBottom={2}>
             <Fab 
                 title="Adicionar gênero" 
-                size="small" 
+                size="small"
+                color="secondary" 
                 component={Link} 
                 to="/genres/create"
             >

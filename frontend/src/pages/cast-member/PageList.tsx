@@ -9,10 +9,11 @@ const PageList = () => {
 
     return (
        <Page title="Listagem membros de elenco">
-           <Box dir="rtl">
+           <Box dir="rtl" marginBottom={2}>
             <Fab 
                 title="Adicionar membro de elenco" 
-                size="small" 
+                size="small"
+                color="secondary"  
                 component={Link} 
                 to="/cast-members/create"
             >

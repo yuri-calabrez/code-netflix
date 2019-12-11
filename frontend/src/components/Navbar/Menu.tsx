@@ -4,14 +4,14 @@ import MenuIcon from '@material-ui/icons/Menu'
 import routes, { MyRouteProps } from '../../routes'
 import { Link } from 'react-router-dom'
 
-const listRoutes = [
-    'dashboard',
-    'categories.list',
-    'genres.list',
-    'cast_members.list'
-]
+const listRoutes = {
+    'dashboard': 'Dashboard',
+    'categories.list': 'Categorias',
+    'genres.list': 'Gêneros',
+    'cast_members.list': 'Membros de elenco'
+}
 
-const menuRoutes = routes.filter(route => listRoutes.includes(route.name))
+const menuRoutes = routes.filter(route => Object.keys(listRoutes).includes(route.name))
 
 export const Menu = () => {
     const [anchorEl, setAnchorEl] = React.useState(null)
@@ -43,11 +43,11 @@ export const Menu = () => {
                 getContentAnchorEl={null}
             >
                 {
-                    listRoutes.map((routeName, key) => {
+                    Object.keys(listRoutes).map((routeName, key) => {
                         const route = menuRoutes.find(route => route.name === routeName) as MyRouteProps
                         return (
                             <MenuItem key={key} to={route.path as string} component={Link} onClick={handleClose}>
-                                {route.label}
+                                {listRoutes[routeName]}
                             </MenuItem>
                         )
                     })
