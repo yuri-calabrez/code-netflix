@@ -1,7 +1,7 @@
 import { RouteProps } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import CategoryList from "../pages/category/PageList";
-import CategoryCreate from "../pages/category/PageForm";
+import CategoryForm from "../pages/category/PageForm";
 import GenreList from '../pages/genre/PageList'
 import GenreCreate from "../pages/genre/PageForm"
 import CastMemberList from '../pages/cast-member/PageList'
@@ -31,7 +31,14 @@ const routes: MyRouteProps[] = [
         name: 'categories.create',
         label: 'Criar categorias',
         path: '/categories/create',
-        component: CategoryCreate,
+        component: CategoryForm,
+        exact: true
+    },
+    {
+        name: 'categories.edit',
+        label: 'Editar categorias',
+        path: '/categories/:id/edit',
+        component: CategoryForm,
         exact: true
     },
     {
