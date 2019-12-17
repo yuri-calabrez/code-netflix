@@ -4,7 +4,8 @@ import { ButtonProps } from '@material-ui/core/Button'
 import useForm from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
 import * as yup from '../../util/vendor/yup'
-import { useParams } from 'react-router-dom'
+import { useParams, useHistory } from 'react-router-dom'
+import {useSnackbar} from "notistack"
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -39,6 +40,9 @@ const Form = () => {
             is_active: true
         }
     })
+
+    const snackbar = useSnackbar()
+    const history = useHistory()
     const {id} = useParams()
     const [category, setCategory] = React.useState<{id: string} | null>(null)
     const [loading, setLoading] = React.useState<boolean>(false)
@@ -71,7 +75,26 @@ const Form = () => {
         const http = !category ? categoryHttp.create(formData) : categoryHttp.update(category.id, formData)
         setLoading(true)
         http
-            .then((response) => console.log(response.data))
+            .then(({data}) => {
+                snackbar.enqueueSnackbar('Categoria salva com sucesso!', {
+                    variant: 'success'
+                })
+
+                setTimeout(() => {
+                    event 
+                    ? (
+                        id 
+                            ? history.replace(`/categories/${data.data.id}/edit`)
+                            : history.push(`/categories/${data.data.id}/edit`)
+                    ) : history.push('/categories') 
+                    })
+            })
+            .catch((error) => {
+                console.log(error)
+                snackbar.enqueueSnackbar('Não foi possível salvar a categoria :(', {
+                    variant: 'error'
+                })
+            })
             .finally(() => setLoading(false))
     }
 
