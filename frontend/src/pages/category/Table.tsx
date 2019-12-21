@@ -4,6 +4,7 @@ import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
 import categoryHttp from '../../util/http/category-http'
 import { BadgeYes, BadgeNo } from '../../components/Badge'
+import { ListResponse, Category } from '../../util/models'
 
 const columnsDefinition: MUIDataTableColumn[] = [
     {
@@ -32,12 +33,21 @@ const columnsDefinition: MUIDataTableColumn[] = [
 
 const Table = () => {
 
-    const [data, setData] = React.useState([])
+    const [data, setData] = React.useState<Category[]>([])
 
     React.useEffect(() => {
-        categoryHttp
-            .list()
-            .then(({data}) => setData(data.data))
+        let isSubscribed = true;
+
+        (async () => {
+            const {data} = await categoryHttp.list<ListResponse<Category>>()
+            if (isSubscribed) {
+                setData(data.data)
+            }
+        })()
+
+        return () => {
+            isSubscribed = false
+        }
     }, [])
 
     return (

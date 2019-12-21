@@ -3,6 +3,7 @@ import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables'
 import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
 import castMemberHttp from '../../util/http/cast-member-http'
+import { CastMember, ListResponse } from '../../util/models'
 
 type castMemberType = {
     [key: number]: string
@@ -40,12 +41,21 @@ const columnsDefinition: MUIDataTableColumn[] = [
 
 const Table = () => {
 
-    const [data, setData] = React.useState([])
+    const [data, setData] = React.useState<CastMember[]>([])
 
     React.useEffect(() => {
-        castMemberHttp
-            .list()
-            .then(({data}) => setData(data.data))
+        let isSubscribed = true;
+
+        (async () => {
+            const {data} = await castMemberHttp.list<ListResponse<CastMember>>()
+            if (isSubscribed) {
+                setData(data.data)
+            }
+        })()
+
+        return () => {
+            isSubscribed = false
+        }
     }, [])
 
     return (
