@@ -7,6 +7,7 @@ import { useParams, useHistory } from 'react-router-dom'
 import {useSnackbar} from "notistack"
 import { Category } from '../../util/models'
 import SubmitActions from '../../components/SubmitActions'
+import { DefaultForm } from '../../components/DefaultForm'
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -105,52 +106,55 @@ const Form = () => {
     }
 
     return (
-     <form onSubmit={handleSubmit(onSubmit)}>
-         <TextField
-            name="name"
-            label="Nome"
-            fullWidth
-            variant="outlined"
-            disabled={loading}
-            inputRef={register}
-            error={errors.name !== undefined}
-            helperText={errors.name && errors.name.message}
-            InputLabelProps={{shrink: true}}
-         />
-         <TextField
-            name="description"
-            label="Descrição"
-            multiline
-            rows="4"
-            fullWidth
-            variant="outlined"
-            disabled={loading}
-            margin="normal"
-            inputRef={register}
-            InputLabelProps={{shrink: true}}
-         />
-        <FormControlLabel
-            disabled={loading}
-            control={
-                <Checkbox
-                    name="is_active"
-                    onChange={
-                        () => setValue('is_active', !getValues()['is_active'])
-                    }
-                    checked={watch('is_active')}
-                />
-            }
-            label="Ativo?"
-            labelPlacement="end"
-        />
+        <DefaultForm 
+            GridItemProps={{xs: 12, md: 6}}
+            onSubmit={handleSubmit(onSubmit)}
+        >
+        <TextField
+                name="name"
+                label="Nome"
+                fullWidth
+                variant="outlined"
+                disabled={loading}
+                inputRef={register}
+                error={errors.name !== undefined}
+                helperText={errors.name && errors.name.message}
+                InputLabelProps={{shrink: true}}
+            />
+            <TextField
+                name="description"
+                label="Descrição"
+                multiline
+                rows="4"
+                fullWidth
+                variant="outlined"
+                disabled={loading}
+                margin="normal"
+                inputRef={register}
+                InputLabelProps={{shrink: true}}
+            />
+            <FormControlLabel
+                disabled={loading}
+                control={
+                    <Checkbox
+                        name="is_active"
+                        onChange={
+                            () => setValue('is_active', !getValues()['is_active'])
+                        }
+                        checked={watch('is_active')}
+                    />
+                }
+                label="Ativo?"
+                labelPlacement="end"
+            />
 
-        <SubmitActions
-            disabledButtons={loading}
-            handleSave={() => triggerValidation().then(isValid => {
-                isValid && onSubmit(getValues(), null)
-            })}
-        />
-     </form>
+            <SubmitActions
+                disabledButtons={loading}
+                handleSave={() => triggerValidation().then(isValid => {
+                    isValid && onSubmit(getValues(), null)
+                })}
+            />
+        </DefaultForm>
     )
 }
 
