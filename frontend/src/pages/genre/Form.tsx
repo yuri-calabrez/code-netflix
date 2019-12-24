@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { TextField, Box, Button, makeStyles, Theme, MenuItem } from '@material-ui/core'
-import { ButtonProps } from '@material-ui/core/Button'
+import { TextField, MenuItem } from '@material-ui/core'
 import useForm from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
 import genreHttp from '../../util/http/genre-http'
@@ -8,14 +7,7 @@ import * as yup from '../../util/vendor/yup'
 import { useSnackbar } from 'notistack'
 import { useHistory, useParams } from 'react-router-dom'
 import { Genre, Category } from '../../util/models'
-
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing(1)
-        }
-    }
-})
+import SubmitActions from '../../components/SubmitActions'
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -37,7 +29,8 @@ const Form = () => {
         setValue, 
         watch,
         errors,
-        reset
+        reset,
+        triggerValidation
     } = useForm({
         validationSchema,
         defaultValues: {
@@ -45,13 +38,6 @@ const Form = () => {
         }
     })
 
-    const classes = useStyles()
-
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        color: 'secondary',
-        variant: "contained"
-    }
 
     const snackbar = useSnackbar()
     const history = useHistory()
@@ -172,10 +158,12 @@ const Form = () => {
          </TextField>
 
 
-         <Box dir="rtl">
-            <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-            <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-         </Box>
+         <SubmitActions
+            disabledButtons={loading}
+            handleSave={() => triggerValidation().then(isValid => {
+                isValid && onSubmit(getValues(), null)
+            })}
+        />
      </form>
     )
 }

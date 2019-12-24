@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { TextField, Checkbox, Box, Button, makeStyles, Theme, FormControlLabel } from '@material-ui/core'
-import { ButtonProps } from '@material-ui/core/Button'
+import { TextField, Checkbox, FormControlLabel } from '@material-ui/core'
 import useForm from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
 import * as yup from '../../util/vendor/yup'
 import { useParams, useHistory } from 'react-router-dom'
 import {useSnackbar} from "notistack"
 import { Category } from '../../util/models'
+import SubmitActions from '../../components/SubmitActions'
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -15,17 +15,7 @@ const validationSchema = yup.object().shape({
         .max(255)
 })
 
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing(1)
-        }
-    }
-})
-
 const Form = () => {
-
-    const classes = useStyles()
 
 
     const {
@@ -35,7 +25,9 @@ const Form = () => {
         setValue,
         errors,
         reset, 
-        watch} = useForm({
+        watch,
+        triggerValidation
+    } = useForm({
         validationSchema,
         defaultValues: {
             is_active: true
@@ -48,12 +40,7 @@ const Form = () => {
     const [category, setCategory] = React.useState<Category | null>(null)
     const [loading, setLoading] = React.useState<boolean>(false)
 
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        color: 'secondary',
-        variant: "contained",
-        disabled: loading
-    }
+   
 
     React.useEffect(() => {
         let isSubscribed = true;
@@ -157,10 +144,12 @@ const Form = () => {
             labelPlacement="end"
         />
 
-         <Box dir="rtl">
-            <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-            <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-         </Box>
+        <SubmitActions
+            disabledButtons={loading}
+            handleSave={() => triggerValidation().then(isValid => {
+                isValid && onSubmit(getValues(), null)
+            })}
+        />
      </form>
     )
 }
