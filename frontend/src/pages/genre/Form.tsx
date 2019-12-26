@@ -1,20 +1,13 @@
 import * as React from 'react'
-import { TextField, Checkbox, Box, Button, makeStyles, Theme, MenuItem, FormControlLabel } from '@material-ui/core'
-import { ButtonProps } from '@material-ui/core/Button'
+import { TextField, MenuItem } from '@material-ui/core'
 import useForm from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
 import genreHttp from '../../util/http/genre-http'
 import * as yup from '../../util/vendor/yup'
 import { useSnackbar } from 'notistack'
 import { useHistory, useParams } from 'react-router-dom'
-
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing(1)
-        }
-    }
-})
+import { Genre, Category } from '../../util/models'
+import SubmitActions from '../../components/SubmitActions'
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -36,7 +29,8 @@ const Form = () => {
         setValue, 
         watch,
         errors,
-        reset
+        reset,
+        triggerValidation
     } = useForm({
         validationSchema,
         defaultValues: {
@@ -44,76 +38,81 @@ const Form = () => {
         }
     })
 
-    const classes = useStyles()
-
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        color: 'secondary',
-        variant: "contained"
-    }
 
     const snackbar = useSnackbar()
     const history = useHistory()
     const {id} = useParams()
-    const [genre, setGenre] = React.useState<{id: string} | null>(null)
-    const [categories, setCategories] = React.useState<any[]>([])
+    const [genre, setGenre] = React.useState<Genre | null>(null)
+    const [categories, setCategories] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
 
     const handleChange = event => setValue('categories_id', event.target.value)
 
     React.useEffect(() => {
-        const promises = [categoryHttp.list()]
-        if (id) {
-            promises.push(genreHttp.get(id))
-        }
-        Promise.all(promises)
-            .then(response => {
-                setLoading(true)
-                const categoryResponse = response[0]
-                const genreResponse = response[1]
+        let isSubscribed = true;
 
-                setCategories(categoryResponse.data.data)
-                if (id) {
-                    setGenre(genreResponse.data.data)
-                    reset({
-                        ...genreResponse.data.data,
-                        categories_id: genreResponse.data.data.categories.map(category => category.id)
-                    })
+        (async () => {
+            setLoading(true)
+            const promises = [categoryHttp.list()]
+            if (id) {
+                promises.push(genreHttp.get(id))
+            }
+
+            try {
+                const [categoryResponse, genreResponse] = await Promise.all(promises)
+                if (isSubscribed) {
+                    setCategories(categoryResponse.data.data)
+
+                    if (id) {
+                        setGenre(genreResponse.data.data)
+                        reset({
+                            ...genreResponse.data.data,
+                            categories_id: genreResponse.data.data.categories.map(category => category.id)
+                        })
+                    }
                 }
-            })
-            .catch(error => {
+            } catch(error) {
+                console.error(error)
                 snackbar.enqueueSnackbar('Não foi possívelcarregar as iformações :(', {
                     variant: 'error'
                 })
-            })
-            .finally(() => setLoading(false))
+            } finally {
+                setLoading(false)
+            }
+        })()
+        
+        return () => {
+            isSubscribed = false
+        }
     }, [])
 
-    function onSubmit(formData, event) {
-        const http = !genre ? genreHttp.create(formData) : genreHttp.update(genre.id, formData)
+    async function onSubmit(formData, event) {
         setLoading(true)
-        http
-            .then(({data}) => {
-                snackbar.enqueueSnackbar('Gênero salvo com sucesso!', {
-                    variant: 'success'
-                })
 
-                setTimeout(() => {
-                    event 
-                    ? (
-                        id 
-                            ? history.replace(`/genres/${data.data.id}/edit`)
-                            : history.push(`/genres/${data.data.id}/edit`)
-                    ) : history.push('/genres') 
-                    })
+        try {
+            const http = !genre ? genreHttp.create(formData) : genreHttp.update(genre.id, formData)
+            const {data} = await http
+
+            snackbar.enqueueSnackbar('Gênero salvo com sucesso!', {
+                variant: 'success'
             })
-            .catch((error) => {
-                console.log(error)
+
+            setTimeout(() => {
+                event 
+                ? (
+                    id 
+                        ? history.replace(`/genres/${data.data.id}/edit`)
+                        : history.push(`/genres/${data.data.id}/edit`)
+                ) : history.push('/genres') 
+                })
+        } catch(error) {
+            console.error(error)
                 snackbar.enqueueSnackbar('Não foi possível salvar o gênero :(', {
                     variant: 'error'
                 })
-            })
-            .finally(() => setLoading(false))
+        } finally {
+            setLoading(false)
+        }
     }
 
     React.useEffect(() => {
@@ -159,10 +158,12 @@ const Form = () => {
          </TextField>
 
 
-         <Box dir="rtl">
-            <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-            <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-         </Box>
+         <SubmitActions
+            disabledButtons={loading}
+            handleSave={() => triggerValidation().then(isValid => {
+                isValid && onSubmit(getValues(), null)
+            })}
+        />
      </form>
     )
 }

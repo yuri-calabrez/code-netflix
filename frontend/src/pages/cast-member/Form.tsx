@@ -1,19 +1,13 @@
 import * as React from 'react'
-import { TextField, Box, Button, makeStyles, Theme, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, FormHelperText } from '@material-ui/core'
-import { ButtonProps } from '@material-ui/core/Button'
+import { TextField, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, FormHelperText } from '@material-ui/core'
 import useForm from 'react-hook-form'
 import castMemberHttp from '../../util/http/cast-member-http'
 import * as yup from '../../util/vendor/yup'
 import { useSnackbar } from 'notistack'
 import { useHistory, useParams } from 'react-router-dom'
+import { CastMember } from '../../util/models'
+import SubmitActions from '../../components/SubmitActions'
 
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        submit: {
-            margin: theme.spacing(1)
-        }
-    }
-})
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -35,66 +29,84 @@ const Form = () => {
         setValue,
         errors,
         reset,
-        watch
+        watch,
+        triggerValidation
     } = useForm({
         validationSchema
     })
 
-    const classes = useStyles()
     const snackbar = useSnackbar()
     const history = useHistory()
     const {id} = useParams()
-    const [castMember, setCastMember] = React.useState<{id: string} | null>(null)
+    const [castMember, setCastMember] = React.useState<CastMember | null>(null)
     const [loading, setLoading] = React.useState<boolean>(false)
 
-    const buttonProps: ButtonProps = {
-        className: classes.submit,
-        color: 'secondary',
-        variant: "contained"
-    }
 
     React.useEffect(() => {
         register({name: 'type'})
     }, [register])
 
     React.useEffect(() => {
+        let isSubscribed = true;
+
         if (!id) {
             return
         }
-        setLoading(true)
-        castMemberHttp.get(id)
-            .then(({data}) => {
-                setCastMember(data.data)
-                reset(data.data)
-            })
-            .finally(() => setLoading(false))
+
+        (async () => {
+            setLoading(true)
+
+            try {
+                const {data} = await castMemberHttp.get(id)
+                if (isSubscribed) {
+                    setCastMember(data.data)
+                    reset(data.data)
+                }
+            } catch(error) {
+                console.error(error)
+                snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
+                    variant: 'error'
+                })
+            } finally {
+                setLoading(false)
+            }
+        })()
+        
+        return () => {
+            isSubscribed = false
+        }
     }, [])
 
     const handleChange = event => setValue('type', parseInt(event.target.value))
 
-    function onSubmit(formData, event) {
-        const http = !castMember ? castMemberHttp.create(formData) : castMemberHttp.update(castMember.id, formData)
-            http
-                .then(({data}) => {
-                    snackbar.enqueueSnackbar('Membro de elenco salvo com sucesso!', {
-                        variant: 'success'
-                    })
+    async function onSubmit(formData, event) {
+        setLoading(true)
 
-                    setTimeout(() => {
-                        event 
-                        ? (
-                            id 
-                                ? history.replace(`/cast-members/${data.data.id}/edit`)
-                                : history.push(`/cast-members/${data.data.id}/edit`)
-                        ) : history.push('/cast-members') 
-                        })
-                })
-                .catch((error) => {
-                    snackbar.enqueueSnackbar('Não foi possível salvar o membro de elenco :(', {
-                        variant: 'error'
-                    })
-                })
-                .finally(() => setLoading(false))
+        try {
+            const http = !castMember ? castMemberHttp.create(formData) : castMemberHttp.update(castMember.id, formData)
+            const {data} = await http
+
+            snackbar.enqueueSnackbar('Membro de elenco salvo com sucesso!', {
+                variant: 'success'
+            })
+
+            setTimeout(() => {
+                event 
+                ? (
+                    id 
+                        ? history.replace(`/cast-members/${data.data.id}/edit`)
+                        : history.push(`/cast-members/${data.data.id}/edit`)
+                ) : history.push('/cast-members') 
+            })
+
+        } catch(error) {
+            console.error(error)
+            snackbar.enqueueSnackbar('Não foi possível salvar o membro de elenco :(', {
+                variant: 'error'
+            })
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -139,10 +151,12 @@ const Form = () => {
             }
          </FormControl>
 
-        <Box dir="rtl">
-            <Button {...buttonProps} onClick={() => onSubmit(getValues(), null)}>Salvar</Button>
-            <Button {...buttonProps} type="submit">Salvar e continuar editando</Button>
-         </Box>
+         <SubmitActions
+            disabledButtons={loading}
+            handleSave={() => triggerValidation().then(isValid => {
+                isValid && onSubmit(getValues(), null)
+            })}
+        />
      </form>
     )
 }
