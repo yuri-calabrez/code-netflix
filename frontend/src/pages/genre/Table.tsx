@@ -5,15 +5,27 @@ import format from 'date-fns/format'
 import { BadgeYes, BadgeNo } from '../../components/Badge'
 import genreHttp from '../../util/http/genre-http'
 import { Genre, ListResponse } from '../../util/models'
+import DefaultTable, { TableColumn } from '../../components/Table'
+import { useSnackbar } from 'notistack'
 
-const columnsDefinition: MUIDataTableColumn[] = [
+const columnsDefinition: TableColumn[] = [
+    {
+        name: "id",
+        label: "ID",
+        width: '30%',
+        options: {
+            sort: false
+        }
+    },
     {
         name: 'name',
-        label: 'Nome'
+        label: 'Nome',
+        width: '20%'
     },
     {
         name: 'is_active',
         label: 'Ativo?',
+        width: '4%',
         options: {
             customBodyRender(value, tableMeta, updateValue) {
                 return value ? <BadgeYes/> : <BadgeNo/>
@@ -23,6 +35,7 @@ const columnsDefinition: MUIDataTableColumn[] = [
     {
         name: 'categories',
         label: 'Categorias',
+        width: '30%',
         options: {
             customBodyRender(value, tableMeta, updateValue) {
                 return value.map(value => value.name).join(', ')
@@ -32,25 +45,43 @@ const columnsDefinition: MUIDataTableColumn[] = [
     {
         name: 'created_at',
         label: 'Criado em',
+        width: '7%',
         options: {
             customBodyRender(value, tableMeta, updateValue) {
             return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
             }
         }
+    },
+    {
+        name: 'actions',
+        label: 'Ações',
+        width: '8%'
     }
 ]
 
 const Table = () => {
 
+    const snackbar = useSnackbar()
     const [data, setData] = React.useState<Genre[]>([])
+    const [loading, setLoading] = React.useState<boolean>(false)
 
     React.useEffect(() => {
         let isSubscribed = true;
 
         (async () => {
-            const {data} = await genreHttp.list<ListResponse<Genre>>()
-            if (isSubscribed) {
-                setData(data.data)
+            setLoading(true)
+            try {
+                const {data} = await genreHttp.list<ListResponse<Genre>>()
+                if (isSubscribed) {
+                    setData(data.data)
+                }
+            } catch (error) {
+                console.error(error)
+                snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
+                    variant: 'error'
+                })
+            } finally {
+                setLoading(false)
             }
         })()
 
@@ -60,10 +91,11 @@ const Table = () => {
     }, [])
 
     return (
-        <MUIDataTable 
+        <DefaultTable 
             columns={columnsDefinition}
-            title="Listagem de gêneros"
+            title=""
             data={data}
+            loading={loading}
         />
     )
 }
