@@ -1,5 +1,4 @@
 import * as React from 'react'
-import MUIDataTable, { MUIDataTableColumn } from 'mui-datatables'
 import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
 import castMemberHttp from '../../util/http/cast-member-http'
@@ -14,6 +13,10 @@ type castMemberType = {
 const castType: castMemberType = {
     1: 'Diretor',
     2: 'Ator'
+}
+
+interface SearchState {
+    search: string
 }
 
 const columnsDefinition: TableColumn[] = [
@@ -60,17 +63,28 @@ const columnsDefinition: TableColumn[] = [
 const Table = () => {
 
     const snackbar = useSnackbar()
+    const subscribed = React.useRef(true)
     const [data, setData] = React.useState<CastMember[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
+    const [searchState, setSearchState] = React.useState<SearchState>({search: ''})
 
     React.useEffect(() => {
-        let isSubscribed = true;
+        subscribed.current = true
+        getData()
+        return () => {
+            subscribed.current = false
+        }
+    }, [searchState])
 
-        (async () => {
-            setLoading(true)
+    async function getData() {
+        setLoading(true)
             try {
-                const {data} = await castMemberHttp.list<ListResponse<CastMember>>()
-                if (isSubscribed) {
+                const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
+                    queryParams: {
+                        search: searchState.search
+                    }
+                })
+                if (subscribed.current) {
                     setData(data.data)
                 }
             } catch (error) {
@@ -81,12 +95,7 @@ const Table = () => {
             } finally {
                 setLoading(false)
             }
-        })()
-
-        return () => {
-            isSubscribed = false
-        }
-    }, [])
+    }
 
     return (
         <DefaultTable 
@@ -94,6 +103,10 @@ const Table = () => {
             title=""
             data={data}
             loading={loading}
+            options={{
+                searchText: searchState.search,
+                onSearchChange: (value) => setSearchState({search: value})
+            }}
         />
     )
 }
