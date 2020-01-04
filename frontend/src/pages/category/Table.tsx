@@ -8,6 +8,7 @@ import DefaultTable, { TableColumn } from '../../components/Table'
 import { useSnackbar } from 'notistack'
 import { IconButton, Link } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
+import { FilterResetButton } from '../../components/Table/FilterResetButton'
 
 interface Pagination {
     page: number
@@ -83,23 +84,24 @@ const columnsDefinition: TableColumn[] = [
 ]
 
 const Table = () => {
+    const initialState = {
+        search: '',
+        pagination: {
+            page: 1,
+            total: 0,
+            per_page: 10
+        },
+        order: {
+            sort: null,
+            dir: null
+        }
+    }
 
     const snackbar = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
-    const [searchState, setSearchState] = React.useState<SearchState>({
-            search: '',
-            pagination: {
-                page: 1,
-                total: 0,
-                per_page: 10
-            },
-            order: {
-                sort: null,
-                dir: null
-            }
-        })
+    const [searchState, setSearchState] = React.useState<SearchState>(initialState)
 
     const columns = columnsDefinition.map(column => {
         return column.name === searchState.order.sort
@@ -150,6 +152,9 @@ const Table = () => {
                 }
             } catch (error) {
                 console.error(error)
+                if (categoryHttp.isCancelledRequest(error)){
+                    return
+                }
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
                     variant: 'error'
                 })
@@ -170,9 +175,20 @@ const Table = () => {
                 page: searchState.pagination.page - 1,
                 rowsPerPage: searchState.pagination.per_page,
                 count: searchState.pagination.total,
+                customToolbar: () => (
+                    <FilterResetButton
+                        handleClick={() => {
+                            setSearchState(initialState)
+                        }}
+                    />
+                ),
                 onSearchChange: (value) => setSearchState((prevState => ({
                     ...prevState,
-                    search: value
+                    search: value,
+                    pagination: {
+                        ...prevState.pagination,
+                        page: 1
+                    }
                 }))),
                 onChangePage:(page) => setSearchState((prevState => ({
                     ...prevState,
