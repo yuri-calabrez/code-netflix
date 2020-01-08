@@ -8,6 +8,7 @@ import { useSnackbar } from 'notistack'
 import { useHistory, useParams } from 'react-router-dom'
 import { Genre, Category } from '../../util/models'
 import SubmitActions from '../../components/SubmitActions'
+import { DefaultForm } from '../../components/DefaultForm'
 
 const validationSchema = yup.object().shape({
     name: yup.string()
@@ -120,7 +121,10 @@ const Form = () => {
     }, [register])
 
     return (
-     <form onSubmit={handleSubmit(onSubmit)}>
+        <DefaultForm 
+            GridItemProps={{xs: 12, md: 6}}
+            onSubmit={handleSubmit(onSubmit)}
+        >
          <TextField
             name="name"
             label="Nome"
@@ -164,7 +168,7 @@ const Form = () => {
                 isValid && onSubmit(getValues(), null)
             })}
         />
-     </form>
+     </DefaultForm>
     )
 }
 
