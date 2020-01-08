@@ -24,6 +24,7 @@
     "react-hook-form": "^3.28.9",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",
+    "redux": "^4.0.5",
     "route-parser": "0.0.5",
     "typescript": "3.6.4",
     "yup": "^0.27.0"

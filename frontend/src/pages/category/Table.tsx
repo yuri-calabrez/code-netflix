@@ -83,25 +83,68 @@ const columnsDefinition: TableColumn[] = [
     }
 ]
 
-const Table = () => {
-    const initialState = {
-        search: '',
-        pagination: {
-            page: 1,
-            total: 0,
-            per_page: 10
-        },
-        order: {
-            sort: null,
-            dir: null
-        }
+const INITIAL_STATE = {
+    search: '',
+    pagination: {
+        page: 1,
+        total: 0,
+        per_page: 10
+    },
+    order: {
+        sort: null,
+        dir: null
     }
+}
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'search':
+            return {
+                ...state,
+                search: action.search,
+                pagination: {
+                    ...state.pagination,
+                    page: 1
+                }
+            }
+        case 'page':
+            return {
+                ...state,
+                pagination: {
+                    ...state.pagination,
+                    page: action.page
+                }
+            }
+        case 'per_page':
+            return {
+                ...state,
+                pagination: {
+                    ...state.pagination,
+                    per_page: action.per_page
+                }
+            }
+        case 'order':
+            return {
+                ...state,
+                order: {
+                   sort: action.sort,
+                    dir: action.dir
+                }
+            }
+        case 'reset':
+        default:
+            return INITIAL_STATE
+    }
+}
+
+const Table = () => {
 
     const snackbar = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
-    const [searchState, setSearchState] = React.useState<SearchState>(initialState)
+    const [searchState, dispatch] = React.useReducer(reducer, INITIAL_STATE)
+    //const [searchState, setSearchState] = React.useState<SearchState>(initialState)
 
     const columns = columnsDefinition.map(column => {
         return column.name === searchState.order.sort
@@ -142,13 +185,13 @@ const Table = () => {
                 })
                 if (subscribed.current) {
                     setData(data.data)
-                    setSearchState((prevState => ({
-                        ...prevState,
-                        pagination: {
-                            ...prevState.pagination,
-                            total: data.meta.total
-                        }
-                    })))
+                    // setSearchState((prevState => ({
+                    //     ...prevState,
+                    //     pagination: {
+                    //         ...prevState.pagination,
+                    //         total: data.meta.total
+                    //     }
+                    // })))
                 }
             } catch (error) {
                 console.error(error)
@@ -188,45 +231,18 @@ const Table = () => {
                 customToolbar: () => (
                     <FilterResetButton
                         handleClick={() => {
-                            setSearchState({
-                                ...initialState,
-                                search: {
-                                    value: initialState.search,
-                                    updated: true
-                                } as any
-                            })
+                           dispatch({type: 'reset'})
                         }}
                     />
                 ),
-                onSearchChange: (value) => setSearchState((prevState => ({
-                    ...prevState,
-                    search: value,
-                    pagination: {
-                        ...prevState.pagination,
-                        page: 1
-                    }
-                }))),
-                onChangePage:(page) => setSearchState((prevState => ({
-                    ...prevState,
-                    pagination: {
-                        ...prevState.pagination,
-                        page: page + 1
-                    }
-                }))),
-                onChangeRowsPerPage:(perPage) => setSearchState((prevState => ({
-                    ...prevState,
-                    pagination: {
-                        ...prevState.pagination,
-                        per_page: perPage
-                    }
-                }))),
-                onColumnSortChange: (changedColumn: string, direction: string) => setSearchState((prevState => ({
-                    ...prevState,
-                    order: {
-                       sort: changedColumn,
-                        dir: direction.includes('desc') ? 'desc' : 'asc'
-                    }
-                })))
+                onSearchChange: (value) => dispatch({type: 'search', search: value}),
+                onChangePage:(page) => dispatch({type: 'page', page: page + 1}),
+                onChangeRowsPerPage:(perPage) => dispatch({type: 'per_page', per_page: perPage}),
+                onColumnSortChange: (changedColumn: string, direction: string) => dispatch({
+                    type: 'order',
+                    sort: changedColumn,
+                    dir: direction.includes('desc') ? 'desc' : 'asc'
+                })
             }}
         />
     )
