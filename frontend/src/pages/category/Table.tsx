@@ -6,10 +6,12 @@ import { BadgeYes, BadgeNo } from '../../components/Badge'
 import { ListResponse, Category } from '../../util/models'
 import DefaultTable, { TableColumn } from '../../components/Table'
 import { useSnackbar } from 'notistack'
-import { IconButton, Link } from '@material-ui/core'
+import { IconButton } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
 import { FilterResetButton } from '../../components/Table/FilterResetButton'
-import reducer, { INITIAL_STATE, Creators } from '../../store/search'
+import { Creators } from '../../store/filter'
+import { Link } from 'react-router-dom'
+import useFilter from '../../hooks/useFilter'
 
 const columnsDefinition: TableColumn[] = [
     {
@@ -51,17 +53,16 @@ const columnsDefinition: TableColumn[] = [
         width: '13%',
         options: {
             sort: false,
-            customBodyRender: (value, tableMeta, updateValue) => {
-                /*return (
+            customBodyRender: (value, tableMeta) => {
+                return (
                     <IconButton
-                        color='secondary'
+                        color={'secondary'}
                         component={Link}
                         to={`/categories/${tableMeta.rowData[0]}/edit`}
                     >
                         <EditIcon/>
                     </IconButton>
-                )*/
-                return 'botão aqui'
+                )
             }
         }
     }
@@ -73,17 +74,19 @@ const Table = () => {
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
-    const [totalRecords, setTotalRecords] = React.useState<number>(0)
-    const [searchState, dispatch] = React.useReducer(reducer, INITIAL_STATE)
-    //const [searchState, setSearchState] = React.useState<SearchState>(initialState)
+    const {
+        filterState,
+        dispatch,
+        totalRecords,
+        setTotalRecords} = useFilter()
 
     const columns = columnsDefinition.map(column => {
-        return column.name === searchState.order.sort
+        return column.name === filterState.order.sort
         ? {
             ...column,
             options: {
                 ...column.options,
-                sortDirection: searchState.order.dir as any
+                sortDirection: filterState.order.dir as any
             }
         }
         : column
@@ -96,10 +99,10 @@ const Table = () => {
             subscribed.current = false
         }
     }, [
-        searchState.search,
-        searchState.pagination.page,
-        searchState.pagination.per_page,
-        searchState.order
+        filterState.search,
+        filterState.pagination.page,
+        filterState.pagination.per_page,
+        filterState.order
     ])
 
     async function getData() {
@@ -107,11 +110,11 @@ const Table = () => {
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
-                        search: cleanSearchText(searchState.search),
-                        page: searchState.pagination.page,
-                        per_page: searchState.pagination.per_page,
-                        sort: searchState.order.sort,
-                        dir: searchState.order.dir
+                        search: cleanSearchText(filterState.search),
+                        page: filterState.pagination.page,
+                        per_page: filterState.pagination.per_page,
+                        sort: filterState.order.sort,
+                        dir: filterState.order.dir
                     }
                 })
                 if (subscribed.current) {
@@ -156,9 +159,9 @@ const Table = () => {
             debouncedSearchTime={500}
             options={{
                 serverSide: true,
-                searchText: searchState.search as any,
-                page: searchState.pagination.page - 1,
-                rowsPerPage: searchState.pagination.per_page,
+                searchText: filterState.search as any,
+                page: filterState.pagination.page - 1,
+                rowsPerPage: filterState.pagination.per_page,
                 count: totalRecords,
                 customToolbar: () => (
                     <FilterResetButton
