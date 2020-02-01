@@ -68,6 +68,9 @@ const columnsDefinition: TableColumn[] = [
     }
 ]
 
+const debounceTime = 300
+const debouncedSearchTime = 300
+
 const Table = () => {
 
     const snackbar = useSnackbar()
@@ -75,22 +78,18 @@ const Table = () => {
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
     const {
+        columns,
+        filterManager,
         filterState,
+        debouncedFilterState,
         dispatch,
         totalRecords,
-        setTotalRecords} = useFilter()
-
-    const columns = columnsDefinition.map(column => {
-        return column.name === filterState.order.sort
-        ? {
-            ...column,
-            options: {
-                ...column.options,
-                sortDirection: filterState.order.dir as any
-            }
-        }
-        : column
-    })
+        setTotalRecords} = useFilter({
+            columns: columnsDefinition,
+            debounceTime: debounceTime,
+            rowsPerPage: 10,
+            rowsPerPageOptions: [10, 25, 50]
+        })
 
     React.useEffect(() => {
         subscribed.current = true
@@ -99,10 +98,10 @@ const Table = () => {
             subscribed.current = false
         }
     }, [
-        filterState.search,
-        filterState.pagination.page,
-        filterState.pagination.per_page,
-        filterState.order
+        filterManager.cleanSearchText(debouncedFilterState.search),
+        debouncedFilterState.pagination.page,
+        debouncedFilterState.pagination.per_page,
+        debouncedFilterState.order
     ])
 
     async function getData() {
@@ -110,7 +109,7 @@ const Table = () => {
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
-                        search: cleanSearchText(filterState.search),
+                        search: filterManager.cleanSearchText(filterState.search),
                         page: filterState.pagination.page,
                         per_page: filterState.pagination.per_page,
                         sort: filterState.order.sort,
@@ -141,22 +140,13 @@ const Table = () => {
             }
     }
 
-    function cleanSearchText(text) {
-        let newText = text
-        if (text && text.value !== undefined) {
-            newText = text.value
-        }
-
-        return newText
-    }
-
     return (
         <DefaultTable 
             columns={columns}
             title=""
             data={data}
             loading={loading}
-            debouncedSearchTime={500}
+            debouncedSearchTime={debouncedSearchTime}
             options={{
                 serverSide: true,
                 searchText: filterState.search as any,
@@ -170,13 +160,10 @@ const Table = () => {
                         }}
                     />
                 ),
-                onSearchChange: (value) => dispatch(Creators.setSearch({search: value})),
-                onChangePage:(page) => dispatch(Creators.setPage({page: page + 1})),
-                onChangeRowsPerPage:(perPage) => dispatch(Creators.setPerPage({per_page: perPage})),
-                onColumnSortChange: (changedColumn: string, direction: string) => dispatch(Creators.setOrder({
-                    sort: changedColumn,
-                    dir: direction.includes('desc') ? 'desc' : 'asc'
-                }))
+                onSearchChange: (value) => filterManager.changeSearch(value),
+                onChangePage:(page) => filterManager.changePage(page),
+                onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
+                onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction)
             }}
         />
     )
