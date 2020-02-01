@@ -93,6 +93,7 @@ const Table = () => {
 
     React.useEffect(() => {
         subscribed.current = true
+        filterManager.pushHistory()
         getData()
         return () => {
             subscribed.current = false
