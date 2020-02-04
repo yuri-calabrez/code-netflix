@@ -70,6 +70,8 @@ const columnsDefinition: TableColumn[] = [
 
 const debounceTime = 300
 const debouncedSearchTime = 300
+const rowsPerPage = 15
+const rowsPerPageOptions =  [10, 25, 50]
 
 const Table = () => {
 
@@ -87,8 +89,8 @@ const Table = () => {
         setTotalRecords} = useFilter({
             columns: columnsDefinition,
             debounceTime: debounceTime,
-            rowsPerPage: 10,
-            rowsPerPageOptions: [10, 25, 50]
+            rowsPerPage,
+            rowsPerPageOptions
         })
 
     React.useEffect(() => {
@@ -154,6 +156,7 @@ const Table = () => {
                 page: filterState.pagination.page - 1,
                 rowsPerPage: filterState.pagination.per_page,
                 count: totalRecords,
+                rowsPerPageOptions,
                 customToolbar: () => (
                     <FilterResetButton
                         handleClick={() => {
