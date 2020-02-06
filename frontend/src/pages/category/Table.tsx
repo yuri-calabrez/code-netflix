@@ -6,10 +6,12 @@ import { BadgeYes, BadgeNo } from '../../components/Badge'
 import { ListResponse, Category } from '../../util/models'
 import DefaultTable, { TableColumn } from '../../components/Table'
 import { useSnackbar } from 'notistack'
-import { IconButton, Link } from '@material-ui/core'
+import { IconButton } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
 import { FilterResetButton } from '../../components/Table/FilterResetButton'
-import reducer, { INITIAL_STATE, Creators } from '../../store/search'
+import { Creators } from '../../store/filter'
+import { Link } from 'react-router-dom'
+import useFilter from '../../hooks/useFilter'
 
 const columnsDefinition: TableColumn[] = [
     {
@@ -51,21 +53,25 @@ const columnsDefinition: TableColumn[] = [
         width: '13%',
         options: {
             sort: false,
-            customBodyRender: (value, tableMeta, updateValue) => {
-                /*return (
+            customBodyRender: (value, tableMeta) => {
+                return (
                     <IconButton
-                        color='secondary'
+                        color={'secondary'}
                         component={Link}
                         to={`/categories/${tableMeta.rowData[0]}/edit`}
                     >
                         <EditIcon/>
                     </IconButton>
-                )*/
-                return 'botão aqui'
+                )
             }
         }
     }
 ]
+
+const debounceTime = 300
+const debouncedSearchTime = 300
+const rowsPerPage = 15
+const rowsPerPageOptions =  [10, 25, 50]
 
 const Table = () => {
 
@@ -73,33 +79,32 @@ const Table = () => {
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
-    const [totalRecords, setTotalRecords] = React.useState<number>(0)
-    const [searchState, dispatch] = React.useReducer(reducer, INITIAL_STATE)
-    //const [searchState, setSearchState] = React.useState<SearchState>(initialState)
-
-    const columns = columnsDefinition.map(column => {
-        return column.name === searchState.order.sort
-        ? {
-            ...column,
-            options: {
-                ...column.options,
-                sortDirection: searchState.order.dir as any
-            }
-        }
-        : column
-    })
+    const {
+        columns,
+        filterManager,
+        filterState,
+        debouncedFilterState,
+        dispatch,
+        totalRecords,
+        setTotalRecords} = useFilter({
+            columns: columnsDefinition,
+            debounceTime: debounceTime,
+            rowsPerPage,
+            rowsPerPageOptions
+        })
 
     React.useEffect(() => {
         subscribed.current = true
+        filterManager.pushHistory()
         getData()
         return () => {
             subscribed.current = false
         }
     }, [
-        searchState.search,
-        searchState.pagination.page,
-        searchState.pagination.per_page,
-        searchState.order
+        filterManager.cleanSearchText(debouncedFilterState.search),
+        debouncedFilterState.pagination.page,
+        debouncedFilterState.pagination.per_page,
+        debouncedFilterState.order
     ])
 
     async function getData() {
@@ -107,11 +112,11 @@ const Table = () => {
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
-                        search: cleanSearchText(searchState.search),
-                        page: searchState.pagination.page,
-                        per_page: searchState.pagination.per_page,
-                        sort: searchState.order.sort,
-                        dir: searchState.order.dir
+                        search: filterManager.cleanSearchText(filterState.search),
+                        page: filterState.pagination.page,
+                        per_page: filterState.pagination.per_page,
+                        sort: filterState.order.sort,
+                        dir: filterState.order.dir
                     }
                 })
                 if (subscribed.current) {
@@ -138,28 +143,20 @@ const Table = () => {
             }
     }
 
-    function cleanSearchText(text) {
-        let newText = text
-        if (text && text.value !== undefined) {
-            newText = text.value
-        }
-
-        return newText
-    }
-
     return (
         <DefaultTable 
             columns={columns}
             title=""
             data={data}
             loading={loading}
-            debouncedSearchTime={500}
+            debouncedSearchTime={debouncedSearchTime}
             options={{
                 serverSide: true,
-                searchText: searchState.search as any,
-                page: searchState.pagination.page - 1,
-                rowsPerPage: searchState.pagination.per_page,
+                searchText: filterState.search as any,
+                page: filterState.pagination.page - 1,
+                rowsPerPage: filterState.pagination.per_page,
                 count: totalRecords,
+                rowsPerPageOptions,
                 customToolbar: () => (
                     <FilterResetButton
                         handleClick={() => {
@@ -167,13 +164,10 @@ const Table = () => {
                         }}
                     />
                 ),
-                onSearchChange: (value) => dispatch(Creators.setSearch({search: value})),
-                onChangePage:(page) => dispatch(Creators.setPage({page: page + 1})),
-                onChangeRowsPerPage:(perPage) => dispatch(Creators.setPerPage({per_page: perPage})),
-                onColumnSortChange: (changedColumn: string, direction: string) => dispatch(Creators.setOrder({
-                    sort: changedColumn,
-                    dir: direction.includes('desc') ? 'desc' : 'asc'
-                }))
+                onSearchChange: (value) => filterManager.changeSearch(value),
+                onChangePage:(page) => filterManager.changePage(page),
+                onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
+                onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction)
             }}
         />
     )
