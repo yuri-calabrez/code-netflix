@@ -23,6 +23,11 @@ class CastMember extends Model
 
     public $incrementing = false;
 
+    public static $types = [
+        self::TYPE_DIRECTOR,
+        self::TYPE_ACTOR,
+    ];
+
     public function modelFilter()
     {
         return $this->provideFilter(CastMemberFilter::class);
