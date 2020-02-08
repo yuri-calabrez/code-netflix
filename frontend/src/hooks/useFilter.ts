@@ -7,6 +7,7 @@ import { useHistory } from 'react-router'
 import {History} from 'history'
 import {isEqual} from 'lodash'
 import * as yup from '../util/vendor/yup'
+import { MuiDataTableRefComponent } from '../components/Table'
 
 interface FilterManagerOptions {
     columns: MUIDataTableColumn[]
@@ -14,6 +15,7 @@ interface FilterManagerOptions {
     rowsPerPageOptions: number[]
     debounceTime: number
     history: History
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>
 }
 
 interface UseFilterOptions extends Omit<FilterManagerOptions, 'history'> {
@@ -50,20 +52,24 @@ export class FilterManager {
 
     schema
     state: FilterState = null as any
+    debounceState: FilterState = null as any
     dispatch: Dispatch<FilterActions> = null as any
     columns: MUIDataTableColumn[]
     rowsPerPage: number
     rowsPerPageOptions: number[]
     history: History
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>
 
     constructor(options: FilterManagerOptions) {
-        const {columns, rowsPerPage, rowsPerPageOptions, history} = options
+        const {columns, rowsPerPage, rowsPerPageOptions, history, tableRef} = options
         this.columns = columns
         this.rowsPerPage = rowsPerPage
         this.rowsPerPageOptions = rowsPerPageOptions
         this.history = history
+        this.tableRef = tableRef
         this.createValidationSchema()
     }
+
 
     changeSearch(value) {
         this.dispatch(Creators.setSearch({search: value}))
@@ -82,6 +88,7 @@ export class FilterManager {
             sort: changedColumn,
             dir: direction.includes('desc') ? 'desc' : 'asc'
         }))
+        this.resePagination()
     }
 
     applyOrderInColumns() {
@@ -105,6 +112,17 @@ export class FilterManager {
         }
 
         return newText
+    }
+
+    resetFilter() {
+        const INITIAL_STATE = {
+            ...this.schema.cast({}),
+            search: {value: null, update: true}
+        }
+        this.dispatch(Creators.setReset({
+            state: INITIAL_STATE
+        }))
+        this.resePagination()
     }
 
     replaceHistory() {
@@ -148,6 +166,11 @@ export class FilterManager {
         }
     }
 
+    private resePagination() {
+        this.tableRef.current.changeRowsPerPage(this.rowsPerPage)
+        this.tableRef.current.changePage(0)
+    }
+
     getStateFromURL() {
         const queryParams = new URLSearchParams(this.history.location.search.substr(1))
         return this.schema.cast({
@@ -173,8 +196,7 @@ export class FilterManager {
                     .transform(value => isNaN(value) || value < 1 ? undefined : value)
                     .default(1),
                 per_page: yup.number()
-                    .oneOf(this.rowsPerPageOptions)
-                    .transform(value => isNaN(value) ? undefined : value)
+                    .transform(value => isNaN(value) || !this.rowsPerPageOptions.includes(parseInt(value)) ? undefined : value)
                     .default(this.rowsPerPage)
             }),
             order: yup.object().shape({
