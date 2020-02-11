@@ -42,3 +42,8 @@ export interface Genre extends Timestampable {
     is_active: number
     categories: Category[]
 }
+
+export const CastMemberTypeMap = {
+    1: 'Diretor',
+    2: 'Ator'
+}

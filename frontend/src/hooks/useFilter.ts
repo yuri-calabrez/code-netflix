@@ -9,6 +9,12 @@ import {isEqual} from 'lodash'
 import * as yup from '../util/vendor/yup'
 import { MuiDataTableRefComponent } from '../components/Table'
 
+interface ExtraFilter {
+    getStateFromUrl: (queryParams: URLSearchParams) => any
+    formatSearchParams: (debounceState: FilterState) => any
+    createValidationSchema: () => any
+}
+
 interface FilterManagerOptions {
     columns: MUIDataTableColumn[]
     rowsPerPage: number
@@ -16,6 +22,7 @@ interface FilterManagerOptions {
     debounceTime: number
     history: History
     tableRef: React.MutableRefObject<MuiDataTableRefComponent>
+    extraFilter?: ExtraFilter
 }
 
 interface UseFilterOptions extends Omit<FilterManagerOptions, 'history'> {
@@ -59,14 +66,16 @@ export class FilterManager {
     rowsPerPageOptions: number[]
     history: History
     tableRef: React.MutableRefObject<MuiDataTableRefComponent>
+    extraFilter?: ExtraFilter
 
     constructor(options: FilterManagerOptions) {
-        const {columns, rowsPerPage, rowsPerPageOptions, history, tableRef} = options
+        const {columns, rowsPerPage, rowsPerPageOptions, history, tableRef, extraFilter} = options
         this.columns = columns
         this.rowsPerPage = rowsPerPage
         this.rowsPerPageOptions = rowsPerPageOptions
         this.history = history
         this.tableRef = tableRef
+        this.extraFilter = extraFilter
         this.createValidationSchema()
     }
 
@@ -161,7 +170,8 @@ export class FilterManager {
             ...(this.state.order.sort && {
                 sort: this.state.order.sort,
                 dir: this.state.order.dir
-            })
+            }),
+            ...(this.extraFilter && this.extraFilter.formatSearchParams(this.state)) 
 
         }
     }
@@ -182,7 +192,12 @@ export class FilterManager {
             order: {
                 sort: queryParams.get('sort'),
                 dir: queryParams.get('dir')
-            }
+            },
+            ...(
+                this.extraFilter && {
+                    extraFilter: this.extraFilter.getStateFromUrl(queryParams)
+                }
+            )
         })
     }
 
@@ -214,6 +229,9 @@ export class FilterManager {
                     .transform(value => !value || !['asc', 'desc'].includes(value.toLowerCase()) ? undefined : value)
                     .default(null)
             }),
+            ...(this.extraFilter && {
+                extraFilter: this.extraFilter.createValidationSchema()
+            }) 
         })
     }
 }
