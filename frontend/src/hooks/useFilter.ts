@@ -123,6 +123,10 @@ export class FilterManager {
         return newText
     }
 
+    changeExtraFilter(data) {
+        this.dispatch(Creators.updateExtraFilter(data))
+    }
+
     resetFilter() {
         const INITIAL_STATE = {
             ...this.schema.cast({}),

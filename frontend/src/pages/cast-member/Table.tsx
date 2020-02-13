@@ -11,6 +11,7 @@ import { IconButton } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
 import { Link } from 'react-router-dom'
 import * as yup from '../../util/vendor/yup'
+import {invert} from 'lodash'
 
 const castMemberNames = Object.values(CastMemberTypeMap)
 
@@ -21,19 +22,26 @@ const columnsDefinition: TableColumn[] = [
         label: "ID",
         width: '30%',
         options: {
-            sort: false
+            sort: false,
+            filter: false
         }
     },
     {
         name: 'name',
         label: 'Nome',
-        width: '43%'
+        width: '43%',
+        options: {
+            filter: false
+        }
     },
     {
         name: 'type',
         label: 'Tipo',
         width: '5%',
         options: {
+            filterOptions: {
+                names: castMemberNames
+            },
             customBodyRender(value, tableMeta, updateValue) {   
             return CastMemberTypeMap[value] !== undefined ? <span>{CastMemberTypeMap[value]}</span> : '-'
             }
@@ -44,6 +52,7 @@ const columnsDefinition: TableColumn[] = [
         label: 'Criado em',
         width: '10%',
         options: {
+            filter: false,
             customBodyRender(value, tableMeta, updateValue) {
             return <span>{format(parseISO(value), 'dd/MM/yyyy')}</span>
             }
@@ -55,6 +64,7 @@ const columnsDefinition: TableColumn[] = [
         width: '12%',
         options: {
             sort: false,
+            filter: false,
             customBodyRender: (value, tableMeta) => {
                 return (
                     <IconButton
@@ -121,7 +131,17 @@ const Table = () => {
                 }
             }
         })
+    const indexColumnType = columns.findIndex(c => c.name === 'type')
+    const columnType = columns[indexColumnType]
+    const typeFilterValue = filterState.extraFilter && filterState.extraFilter.type as never
+    (columnType.options as any).filterList = typeFilterValue ? [typeFilterValue] : []
+    
+    const serverSideFilterList = columns.map(c => [])
+    if (typeFilterValue) {
+        serverSideFilterList[indexColumnType] = [typeFilterValue]
+    }
 
+    console.log(serverSideFilterList)
     React.useEffect(() => {
         subscribed.current = true
         filterManager.pushHistory()
@@ -133,7 +153,8 @@ const Table = () => {
         filterManager.cleanSearchText(debouncedFilterState.search),
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
-        debouncedFilterState.order
+        debouncedFilterState.order,
+        JSON.stringify(debouncedFilterState.extraFilter)
     ])
 
     async function getData() {
@@ -145,7 +166,12 @@ const Table = () => {
                         page: filterState.pagination.page,
                         per_page: filterState.pagination.per_page,
                         sort: filterState.order.sort,
-                        dir: filterState.order.dir
+                        dir: filterState.order.dir,
+                        ...(
+                            debouncedFilterState.extraFilter &&
+                            debouncedFilterState.extraFilter.type &&
+                            {type: invert(CastMemberTypeMap)[debouncedFilterState.extraFilter.type]}
+                        )
                     }
                 })
                 if (subscribed.current) {
@@ -174,10 +200,17 @@ const Table = () => {
             ref={tableRef}
             options={{
                 serverSide: true,
+                serverSideFilterList,
                 searchText: filterState.search as any,
                 page: filterState.pagination.page - 1,
                 rowsPerPage: filterState.pagination.per_page,
                 count: totalRecords,
+                onFilterChange: (column, filterList) => {
+                    const columnIndex = columns.findIndex(c => c.name === column)
+                    filterManager.changeExtraFilter({
+                        [column]: filterList[columnIndex].length ? filterList[columnIndex][0] : null
+                    })
+                },
                 rowsPerPageOptions,
                 customToolbar: () => (
                     <FilterResetButton
