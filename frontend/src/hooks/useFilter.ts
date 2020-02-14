@@ -7,6 +7,13 @@ import { useHistory } from 'react-router'
 import {History} from 'history'
 import {isEqual} from 'lodash'
 import * as yup from '../util/vendor/yup'
+import { MuiDataTableRefComponent } from '../components/Table'
+
+interface ExtraFilter {
+    getStateFromUrl: (queryParams: URLSearchParams) => any
+    formatSearchParams: (debounceState: FilterState) => any
+    createValidationSchema: () => any
+}
 
 interface FilterManagerOptions {
     columns: MUIDataTableColumn[]
@@ -14,6 +21,8 @@ interface FilterManagerOptions {
     rowsPerPageOptions: number[]
     debounceTime: number
     history: History
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>
+    extraFilter?: ExtraFilter
 }
 
 interface UseFilterOptions extends Omit<FilterManagerOptions, 'history'> {
@@ -50,20 +59,26 @@ export class FilterManager {
 
     schema
     state: FilterState = null as any
+    debounceState: FilterState = null as any
     dispatch: Dispatch<FilterActions> = null as any
     columns: MUIDataTableColumn[]
     rowsPerPage: number
     rowsPerPageOptions: number[]
     history: History
+    tableRef: React.MutableRefObject<MuiDataTableRefComponent>
+    extraFilter?: ExtraFilter
 
     constructor(options: FilterManagerOptions) {
-        const {columns, rowsPerPage, rowsPerPageOptions, history} = options
+        const {columns, rowsPerPage, rowsPerPageOptions, history, tableRef, extraFilter} = options
         this.columns = columns
         this.rowsPerPage = rowsPerPage
         this.rowsPerPageOptions = rowsPerPageOptions
         this.history = history
+        this.tableRef = tableRef
+        this.extraFilter = extraFilter
         this.createValidationSchema()
     }
+
 
     changeSearch(value) {
         this.dispatch(Creators.setSearch({search: value}))
@@ -82,6 +97,7 @@ export class FilterManager {
             sort: changedColumn,
             dir: direction.includes('desc') ? 'desc' : 'asc'
         }))
+        this.resePagination()
     }
 
     applyOrderInColumns() {
@@ -105,6 +121,21 @@ export class FilterManager {
         }
 
         return newText
+    }
+
+    changeExtraFilter(data) {
+        this.dispatch(Creators.updateExtraFilter(data))
+    }
+
+    resetFilter() {
+        const INITIAL_STATE = {
+            ...this.schema.cast({}),
+            search: {value: null, update: true}
+        }
+        this.dispatch(Creators.setReset({
+            state: INITIAL_STATE
+        }))
+        this.resePagination()
     }
 
     replaceHistory() {
@@ -143,9 +174,15 @@ export class FilterManager {
             ...(this.state.order.sort && {
                 sort: this.state.order.sort,
                 dir: this.state.order.dir
-            })
+            }),
+            ...(this.extraFilter && this.extraFilter.formatSearchParams(this.state)) 
 
         }
+    }
+
+    private resePagination() {
+        this.tableRef.current.changeRowsPerPage(this.rowsPerPage)
+        this.tableRef.current.changePage(0)
     }
 
     getStateFromURL() {
@@ -159,7 +196,12 @@ export class FilterManager {
             order: {
                 sort: queryParams.get('sort'),
                 dir: queryParams.get('dir')
-            }
+            },
+            ...(
+                this.extraFilter && {
+                    extraFilter: this.extraFilter.getStateFromUrl(queryParams)
+                }
+            )
         })
     }
 
@@ -173,8 +215,7 @@ export class FilterManager {
                     .transform(value => isNaN(value) || value < 1 ? undefined : value)
                     .default(1),
                 per_page: yup.number()
-                    .oneOf(this.rowsPerPageOptions)
-                    .transform(value => isNaN(value) ? undefined : value)
+                    .transform(value => isNaN(value) || !this.rowsPerPageOptions.includes(parseInt(value)) ? undefined : value)
                     .default(this.rowsPerPage)
             }),
             order: yup.object().shape({
@@ -192,6 +233,9 @@ export class FilterManager {
                     .transform(value => !value || !['asc', 'desc'].includes(value.toLowerCase()) ? undefined : value)
                     .default(null)
             }),
+            ...(this.extraFilter && {
+                extraFilter: this.extraFilter.createValidationSchema()
+            }) 
         })
     }
 }

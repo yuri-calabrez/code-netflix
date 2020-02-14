@@ -4,12 +4,11 @@ import format from 'date-fns/format'
 import categoryHttp from '../../util/http/category-http'
 import { BadgeYes, BadgeNo } from '../../components/Badge'
 import { ListResponse, Category } from '../../util/models'
-import DefaultTable, { TableColumn } from '../../components/Table'
+import DefaultTable, { TableColumn, MuiDataTableRefComponent } from '../../components/Table'
 import { useSnackbar } from 'notistack'
 import { IconButton } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
 import { FilterResetButton } from '../../components/Table/FilterResetButton'
-import { Creators } from '../../store/filter'
 import { Link } from 'react-router-dom'
 import useFilter from '../../hooks/useFilter'
 
@@ -79,6 +78,8 @@ const Table = () => {
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
+    const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
+
     const {
         columns,
         filterManager,
@@ -90,7 +91,8 @@ const Table = () => {
             columns: columnsDefinition,
             debounceTime: debounceTime,
             rowsPerPage,
-            rowsPerPageOptions
+            rowsPerPageOptions,
+            tableRef
         })
 
     React.useEffect(() => {
@@ -150,6 +152,7 @@ const Table = () => {
             data={data}
             loading={loading}
             debouncedSearchTime={debouncedSearchTime}
+            ref={tableRef}
             options={{
                 serverSide: true,
                 searchText: filterState.search as any,
@@ -160,7 +163,7 @@ const Table = () => {
                 customToolbar: () => (
                     <FilterResetButton
                         handleClick={() => {
-                           dispatch(Creators.setReset())
+                           filterManager.resetFilter()
                         }}
                     />
                 ),

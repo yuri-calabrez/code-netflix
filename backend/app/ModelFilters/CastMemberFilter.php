@@ -2,6 +2,7 @@
 
 namespace App\ModelFilters;
 
+use App\Models\CastMember;
 
 class CastMemberFilter extends DefaultModelFilter
 {
@@ -10,5 +11,13 @@ class CastMemberFilter extends DefaultModelFilter
     public function search($search)
     {
         $this->query->where('name', 'LIKE', "%$search%");
+    }
+
+    public function type($type)
+    {
+        $types_ = (int)$type;
+        if (in_array($types_, CastMember::$types)) {
+            $this->where('type', $types_);
+        }
     }
 }
