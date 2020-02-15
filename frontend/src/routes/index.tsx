@@ -6,6 +6,8 @@ import GenreList from '../pages/genre/PageList'
 import GenreForm from "../pages/genre/PageForm"
 import CastMemberList from '../pages/cast-member/PageList'
 import CastMemberForm from "../pages/cast-member/PageForm"
+import VideoList from "../pages/video/PageList"
+import VideoForm from "../pages/video/PageForm"
 
 export interface MyRouteProps extends RouteProps {
     name: string
@@ -81,6 +83,27 @@ const routes: MyRouteProps[] = [
         label: 'Editar membro de elenco',
         path: '/cast-members/:id/edit',
         component: CastMemberForm,
+        exact: true
+    },
+    {
+        name: 'videos.list',
+        label: 'Listar vídeo',
+        path: '/videos',
+        component: VideoList,
+        exact: true
+    },
+    {
+        name: 'videos.create',
+        label: 'Criar vídeo',
+        path: '/videos/create',
+        component: VideoForm,
+        exact: true
+    },
+    {
+        name: 'videos.edit',
+        label: 'Editar vídeo',
+        path: '/videos/:id/edit',
+        component: VideoForm,
         exact: true
     }
 ]
