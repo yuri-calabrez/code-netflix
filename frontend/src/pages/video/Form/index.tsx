@@ -1,13 +1,14 @@
 import * as React from 'react'
-import { TextField, Checkbox, FormControlLabel, Grid, Typography } from '@material-ui/core'
+import { TextField, Checkbox, FormControlLabel, Grid, Typography, useMediaQuery, useTheme } from '@material-ui/core'
 import useForm from 'react-hook-form'
-import videoHttp from '../../util/http/video-http'
-import * as yup from '../../util/vendor/yup'
+import videoHttp from '../../../util/http/video-http'
+import * as yup from '../../../util/vendor/yup'
 import { useParams, useHistory } from 'react-router-dom'
 import {useSnackbar} from "notistack"
-import { Video } from '../../util/models'
-import SubmitActions from '../../components/SubmitActions'
-import { DefaultForm } from '../../components/DefaultForm'
+import { Video } from '../../../util/models'
+import SubmitActions from '../../../components/SubmitActions'
+import { DefaultForm } from '../../../components/DefaultForm'
+import RatingField from './RatingField'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -43,7 +44,7 @@ const Form = () => {
     } = useForm({
         validationSchema,
         defaultValues: {
-            is_active: true
+            
         }
     })
 
@@ -52,7 +53,12 @@ const Form = () => {
     const {id} = useParams()
     const [video, setVideo] = React.useState<Video | null>(null)
     const [loading, setLoading] = React.useState<boolean>(false)
+    const theme = useTheme()
+    const isGreaterMd = useMediaQuery(theme.breakpoints.up('md'))
 
+    React.useEffect(() => {
+        ['rating', 'opened'].forEach(name => register({name}))
+    }, [register])
    
 
     React.useEffect(() => {
@@ -182,7 +188,15 @@ const Form = () => {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                    Classificação
+                    <RatingField
+                        value={watch('rating')}
+                        setValue={(value) => setValue('rating', value, true)}
+                        error={errors.rating}
+                        disabled={loading}
+                        FormControlProps={{
+                            margin: isGreaterMd ? 'none' : 'normal'
+                        }}
+                    />
                     <br/>
                     Uploads
                     <br/>
