@@ -9,6 +9,7 @@ import { Video } from '../../../util/models'
 import SubmitActions from '../../../components/SubmitActions'
 import { DefaultForm } from '../../../components/DefaultForm'
 import RatingField from './RatingField'
+import UploadField from './UploadField'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -198,7 +199,11 @@ const Form = () => {
                         }}
                     />
                     <br/>
-                    Uploads
+                    <UploadField
+                    accept="image/jpg"
+                    label="Thumb"
+                    setValue={(value) => setValue('thumb_file', value)}
+                    />
                     <br/>
                     <FormControlLabel
                         control={
