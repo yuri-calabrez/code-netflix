@@ -1,15 +1,19 @@
 import * as React from 'react'
 import { TextField, InputAdornment } from '@material-ui/core'
-import {useRef, MutableRefObject, useState} from 'react'
+import {useRef, MutableRefObject, useState, useImperativeHandle} from 'react'
 import { TextFieldProps } from '@material-ui/core/TextField'
 
-interface InputFileProps {
+export interface InputFileProps {
     ButtonFile: React.ReactNode
     InputFileProps?: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
     TextFieldProps?: TextFieldProps
 }
 
-const InputFile: React.FC<InputFileProps> = (props) => {
+export interface InputFileComponent {
+    openWindow: () => void
+}
+
+const InputFile = React.forwardRef<InputFileComponent, InputFileProps>((props, ref) => {
     const fileRef = useRef() as MutableRefObject<HTMLInputElement>
     const [filename, setFilename] = useState("")
 
@@ -53,6 +57,10 @@ const InputFile: React.FC<InputFileProps> = (props) => {
             }
         }
     }
+
+    useImperativeHandle(ref, () => ({
+        openWindow: () => fileRef.current.click()
+    }))
     
     return (
         <div>
@@ -61,6 +69,6 @@ const InputFile: React.FC<InputFileProps> = (props) => {
             <TextField {...textFieldProps}/>
         </div>
     )
-}
+})
 
 export default InputFile
