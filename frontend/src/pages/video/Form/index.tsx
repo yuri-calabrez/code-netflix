@@ -10,6 +10,8 @@ import SubmitActions from '../../../components/SubmitActions'
 import { DefaultForm } from '../../../components/DefaultForm'
 import RatingField from './RatingField'
 import UploadField from './UploadField'
+import AsyncAutocomplete from '../../../components/AsyncAutocomplete'
+import genreHttp from '../../../util/http/genre-http'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -132,6 +134,16 @@ const Form = () => {
         }
     }
 
+    const fetchOptions = (searchText) => (
+        genreHttp.list({
+            queryParams: {
+                search: searchText,
+                all: ''
+            }
+        })
+        .then(({data}) => data.data)
+    )
+
     return (
         <DefaultForm 
             GridItemProps={{xs: 12}}
@@ -196,7 +208,16 @@ const Form = () => {
                             />
                         </Grid>
                     </Grid>
-                    Elenco <br/> Genero e categorias
+                    <AsyncAutocomplete 
+                    AutocompleteProps={{
+                        freeSolo: true,
+                        getOptionLabel: option => option.name
+                    }}
+                    fetchOptions={fetchOptions}
+                    TextFieldProps={{
+                        label: 'Gêneros'
+                    }}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={6}>
