@@ -4,7 +4,7 @@ const useCollectionManager = (collection: any[], setCollection) => {
     const snackbar = useSnackbar()
 
     return {
-        addtem(item){
+        addItem(item){
             if (!item || item === "") {
                 return
             }

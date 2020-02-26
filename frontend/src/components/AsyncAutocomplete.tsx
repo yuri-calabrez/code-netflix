@@ -1,13 +1,12 @@
 import * as React from 'react'
-import {Autocomplete, AutocompleteProps} from '@material-ui/lab'
+import {Autocomplete, AutocompleteProps, UseAutocompleteSingleProps} from '@material-ui/lab'
 import TextField, { TextFieldProps } from '@material-ui/core/TextField'
 import { CircularProgress } from '@material-ui/core'
-import { useSnackbar } from 'notistack'
 
 interface AsyncAutocompleteProps {
     fetchOptions: (searchText) => Promise<any>
     TextFieldProps?: TextFieldProps
-    AutocompleteProps?: Omit<AutocompleteProps<any>, 'renderInput'>
+    AutocompleteProps?: Omit<AutocompleteProps<any>, 'renderInput'> & UseAutocompleteSingleProps<any>
 }
 
 const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
@@ -19,7 +18,6 @@ const AsyncAutocomplete: React.FC<AsyncAutocompleteProps> = (props) => {
     const [loading, setLoading] = React.useState(false)
     const [options, setOptions] = React.useState([])
     
-    const snackbar = useSnackbar()
 
     const textFieldProps: TextFieldProps = {
         margin: 'normal',

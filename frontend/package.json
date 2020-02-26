@@ -22,7 +22,7 @@
     "notistack": "^0.9.7",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
-    "react-hook-form": "^3.28.9",
+    "react-hook-form": "^3.29.4",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",
     "redux": "^4.0.5",

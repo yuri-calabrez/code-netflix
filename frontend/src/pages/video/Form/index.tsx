@@ -58,7 +58,7 @@ const Form = () => {
     } = useForm({
         validationSchema,
         defaultValues: {
-            
+            genres: []
         }
     })
 
@@ -71,7 +71,7 @@ const Form = () => {
     const isGreaterMd = useMediaQuery(theme.breakpoints.up('md'))
 
     React.useEffect(() => {
-        ['rating', 'opened', ...fileFields].forEach(name => register({name}))
+        ['rating', 'opened', 'genres', ...fileFields].forEach(name => register({name}))
     }, [register])
    
 
@@ -202,7 +202,10 @@ const Form = () => {
                     <br/>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
-                            <GenreField/>
+                            <GenreField
+                                genres={watch('genres')}
+                                setGenres={(value) => setValue('genres', value, true)}
+                            />
                         </Grid>
                         <Grid item xs={12} md={6}>
                             <CategoryField/>
