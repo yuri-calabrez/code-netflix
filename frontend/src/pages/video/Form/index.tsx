@@ -212,6 +212,8 @@ const Form = () => {
                             <GenreField
                                 genres={watch('genres')}
                                 setGenres={(value) => setValue('genres', value, true)}
+                                categories={watch('categories')}
+                                setCategories={(value) => setValue('categories', value, true)}
                                 error={errors.genres}
                                 disabled={loading}
                             />

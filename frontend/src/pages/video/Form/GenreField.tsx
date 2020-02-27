@@ -6,10 +6,13 @@ import { Typography, FormControl, FormControlProps, FormHelperText } from '@mate
 import useHttpHandled from '../../../hooks/useHttpHandled'
 import genreHttp from '../../../util/http/genre-http'
 import useCollectionManager from '../../../hooks/useCollectionManager'
+import { getGenresFromCategory } from '../../../util/model-filters'
 
 interface GenreFieldProps {
     genres: any[],
     setGenres: (genres) => void
+    categories: any[]
+    setCategories: (categories) => void
     error: any
     disabled?: boolean
     FormControlProps?: FormControlProps
@@ -17,8 +20,9 @@ interface GenreFieldProps {
 
 const GenreField: React.FC<GenreFieldProps> = (props) => {
     const autocompleteHttp = useHttpHandled()
-    const {genres, setGenres, error, disabled} = props
+    const {genres, setGenres, categories, setCategories, error, disabled} = props
     const {addItem, removeItem} = useCollectionManager(genres, setGenres)
+    const {removeItem: removeCategory} = useCollectionManager(categories, setCategories)
 
     function fetchOptions(searchText) {
         return autocompleteHttp(
@@ -59,7 +63,18 @@ const GenreField: React.FC<GenreFieldProps> = (props) => {
                 <GridSelected>
                     {
                         genres.map((genre, key) => (
-                            <GridSelectedItem key={key} onClick={() => {}} xs={12}>
+                            <GridSelectedItem 
+                                key={key} 
+                                onDelete={() => {
+                                    const categoriesWithOneGenre = categories.filter(category => {
+                                        const categoryGenres = getGenresFromCategory(genres, category)
+                                        return categoryGenres.length === 1 && genres[0].id == genre.id
+                                    })
+                                    
+                                    categoriesWithOneGenre.forEach(cat => removeCategory(cat))
+                                    removeItem(genre)
+                                }} 
+                                xs={12}>
                                 <Typography noWrap={true}> {genre.name} </Typography>
                             </GridSelectedItem>
                         ))

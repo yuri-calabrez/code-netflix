@@ -2,11 +2,13 @@ import * as React from 'react'
 import AsyncAutocomplete from '../../../components/AsyncAutocomplete'
 import GridSelected from '../../../components/GridSelected'
 import GridSelectedItem from '../../../components/GridSelectedItem'
-import { Typography, FormControlProps, FormControl, FormHelperText } from '@material-ui/core'
+import { Typography, FormControlProps, FormControl, FormHelperText, makeStyles, Theme } from '@material-ui/core'
 import useHttpHandled from '../../../hooks/useHttpHandled'
 import useCollectionManager from '../../../hooks/useCollectionManager'
 import { Genre } from '../../../util/models'
 import categoryHttp from '../../../util/http/category-http'
+import { getGenresFromCategory } from '../../../util/model-filters'
+import { grey } from '@material-ui/core/colors'
 
 interface CategoryFieldProps {
     categories: any[]
@@ -17,11 +19,18 @@ interface CategoryFieldProps {
     FormControlProps?: FormControlProps
 }
 
+const useStyles = makeStyles((theme: Theme) => ({
+    genresSubtitle: {
+        fontSize: '0.8rem',
+        color: grey["800"]
+    }
+}))
+
 const CategoryField: React.FC<CategoryFieldProps> = (props) => {
     const {categories, setCategories, genres, error, disabled} = props
     const autocompleteHttp = useHttpHandled()
     const {addItem, removeItem} = useCollectionManager(categories, setCategories)
-
+    const classes = useStyles()
 
     function fetchOptions() {
         return autocompleteHttp(
@@ -61,11 +70,16 @@ const CategoryField: React.FC<CategoryFieldProps> = (props) => {
             >
                 <GridSelected>
                 {
-                        categories.map((category, key) => (
-                            <GridSelectedItem key={key} onClick={() => {}} xs={12}>
-                                <Typography noWrap={true}> {category.name} </Typography>
-                            </GridSelectedItem>
-                        ))
+                        categories.map((category, key) => {
+                            const genreFromCategories = getGenresFromCategory(genres, category)
+                                .map(genre => genre.name).join(', ')
+                            return (
+                                <GridSelectedItem key={key} onDelete={() => removeItem(category)} xs={12}>
+                                    <Typography noWrap={true}> {category.name} </Typography>
+                                    <Typography noWrap={true} className={classes.genresSubtitle}> {genreFromCategories} </Typography>
+                                </GridSelectedItem>
+                            )
+                        })
                     }
                 </GridSelected>
                 {
