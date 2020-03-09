@@ -30,9 +30,22 @@ const validationSchema = yup.object().shape({
     duration: yup.number()
         .required()
         .min(1),
+    cast_members: yup.array()
+        .label('Elenco')
+        .required(),
     genres: yup.array()
         .label('Gêneros')
-        .required(),
+        .required()
+        .test({
+            message: 'Cada gênero escolhido precisa ter pelo menos uma categoria selecionada',
+            test(value) {
+                return value.every(
+                    v => v.categories.filter(
+                        cat => this.parent.categories.map(c => c.id).includes(cat.id)
+                    ).length !== 0
+                )
+            }
+        }),
     categories: yup.array()
         .label('Categorias')
         .required(),
@@ -112,6 +125,7 @@ const Form = () => {
             try {
                 const {data} = await videoHttp.get(id)
                 if (isSubscribed) {
+                    console.log('video:', data.data)
                     setVideo(data.data)
                     reset(data.data)
                 }
