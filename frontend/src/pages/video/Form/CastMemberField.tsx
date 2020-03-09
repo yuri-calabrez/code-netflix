@@ -4,34 +4,31 @@ import GridSelected from '../../../components/GridSelected'
 import GridSelectedItem from '../../../components/GridSelectedItem'
 import { Typography, FormControl, FormControlProps, FormHelperText } from '@material-ui/core'
 import useHttpHandled from '../../../hooks/useHttpHandled'
-import genreHttp from '../../../util/http/genre-http'
 import useCollectionManager from '../../../hooks/useCollectionManager'
-import { getGenresFromCategory } from '../../../util/model-filters'
+import castMemberHttp from '../../../util/http/cast-member-http'
 
-interface GenreFieldProps extends React.RefAttributes<GenreFieldComponent>{
-    genres: any[],
-    setGenres: (genres) => void
-    categories: any[]
-    setCategories: (categories) => void
+interface CastMemberFieldProps extends React.RefAttributes<CastMemberFieldComponent>{
+    castMembers: any[],
+    setCastMembers: (castMembers) => void
     error: any
     disabled?: boolean
     FormControlProps?: FormControlProps
 }
 
-export interface GenreFieldComponent {
+export interface CastMemberFieldComponent {
     clear: () => void
 }
 
-const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props, ref) => {
+const CastMemberField = React.forwardRef<CastMemberFieldComponent, CastMemberFieldProps> ((props, ref) => {
+
     const autocompleteHttp = useHttpHandled()
-    const {genres, setGenres, categories, setCategories, error, disabled} = props
-    const {addItem, removeItem} = useCollectionManager(genres, setGenres)
-    const {removeItem: removeCategory} = useCollectionManager(categories, setCategories)
+    const {castMembers, setCastMembers, error, disabled} = props
+    const {addItem, removeItem} = useCollectionManager(castMembers, setCastMembers)
     const autocompleteRef = React.useRef() as React.MutableRefObject<AsyncAutocompleteComponent>
 
     function fetchOptions(searchText) {
         return autocompleteHttp(
-            genreHttp.list({
+            castMemberHttp.list({
                 queryParams: {
                     search: searchText,
                     all: ''
@@ -49,7 +46,6 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
             <AsyncAutocomplete 
                 ref={autocompleteRef}
                 AutocompleteProps={{
-                    //autoSelect: true,
                     clearOnEscape: true,
                     freeSolo: true,
                     getOptionLabel: option => option.name,
@@ -59,7 +55,7 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
                 }}
                 fetchOptions={fetchOptions}
                 TextFieldProps={{
-                    label: 'Gêneros',
+                    label: 'Elenco',
                     error: error !== undefined
                 }}
             />
@@ -72,20 +68,14 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
             >
                 <GridSelected>
                     {
-                        genres.map((genre, key) => (
+                        castMembers.map((castMember, key) => (
                             <GridSelectedItem 
                                 key={key} 
                                 onDelete={() => {
-                                    const categoriesWithOneGenre = categories.filter(category => {
-                                        const categoryGenres = getGenresFromCategory(genres, category)
-                                        return categoryGenres.length === 1 && genres[0].id == genre.id
-                                    })
-                                    
-                                    categoriesWithOneGenre.forEach(cat => removeCategory(cat))
-                                    removeItem(genre)
+                                    removeItem(castMember)
                                 }} 
-                                xs={12}>
-                                <Typography noWrap={true}> {genre.name} </Typography>
+                                xs={6}>
+                                <Typography noWrap={true}> {castMember.name} </Typography>
                             </GridSelectedItem>
                         ))
                     }
@@ -98,4 +88,4 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
     )
 })
 
-export default GenreField
+export default CastMemberField

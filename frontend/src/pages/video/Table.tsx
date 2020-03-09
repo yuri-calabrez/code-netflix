@@ -3,7 +3,7 @@ import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
 import categoryHttp from '../../util/http/category-http'
 import { BadgeYes, BadgeNo } from '../../components/Badge'
-import { ListResponse, Category } from '../../util/models'
+import { ListResponse, Category, Video } from '../../util/models'
 import DefaultTable, { TableColumn, MuiDataTableRefComponent } from '../../components/Table'
 import { useSnackbar } from 'notistack'
 import { IconButton } from '@material-ui/core'
@@ -11,6 +11,7 @@ import EditIcon from '@material-ui/icons/Edit'
 import { FilterResetButton } from '../../components/Table/FilterResetButton'
 import { Link } from 'react-router-dom'
 import useFilter from '../../hooks/useFilter'
+import videoHttp from '../../util/http/video-http'
 
 const columnsDefinition: TableColumn[] = [
     {
@@ -18,21 +19,36 @@ const columnsDefinition: TableColumn[] = [
         label: "ID",
         width: '30%',
         options: {
-            sort: false
+            sort: false,
+            filter: false
         }
     },
     {
-        name: 'name',
-        label: 'Nome',
-        width: '43%'
+        name: 'title',
+        label: 'Título',
+        width: '20%'
     },
     {
-        name: 'is_active',
-        label: 'Ativo?',
-        width: '4%',
+        name: 'genres',
+        label: 'Gêneros',
+        width: '13%',
         options: {
+            sort:false,
+            filter: false,
             customBodyRender(value, tableMeta, updateValue) {
-                return value ? <BadgeYes/> : <BadgeNo/>
+                return value.map(value => value.name).join(', ')
+            }
+        }
+    },
+    {
+        name: 'categories',
+        label: 'Categorias',
+        width: '12%',
+        options: {
+            sort:false,
+            filter: false,
+            customBodyRender(value, tableMeta, updateValue) {
+                return value.map(value => value.name).join(', ')
             }
         }
     },
@@ -57,7 +73,7 @@ const columnsDefinition: TableColumn[] = [
                     <IconButton
                         color={'secondary'}
                         component={Link}
-                        to={`/categories/${tableMeta.rowData[0]}/edit`}
+                        to={`/videos/${tableMeta.rowData[0]}/edit`}
                     >
                         <EditIcon/>
                     </IconButton>
@@ -76,7 +92,7 @@ const Table = () => {
 
     const snackbar = useSnackbar()
     const subscribed = React.useRef(true)
-    const [data, setData] = React.useState<Category[]>([])
+    const [data, setData] = React.useState<Video[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
 
@@ -112,29 +128,22 @@ const Table = () => {
     async function getData() {
         setLoading(true)
             try {
-                const {data} = await categoryHttp.list<ListResponse<Category>>({
+                const {data} = await videoHttp.list<ListResponse<Video>>({
                     queryParams: {
-                        search: filterManager.cleanSearchText(filterState.search),
-                        page: filterState.pagination.page,
-                        per_page: filterState.pagination.per_page,
-                        sort: filterState.order.sort,
-                        dir: filterState.order.dir
+                        search: filterManager.cleanSearchText(debouncedFilterState.search),
+                        page: debouncedFilterState.pagination.page,
+                        per_page: debouncedFilterState.pagination.per_page,
+                        sort: debouncedFilterState.order.sort,
+                        dir: debouncedFilterState.order.dir
                     }
                 })
                 if (subscribed.current) {
                     setData(data.data)
                     setTotalRecords(data.meta.total)
-                    // setSearchState((prevState => ({
-                    //     ...prevState,
-                    //     pagination: {
-                    //         ...prevState.pagination,
-                    //         total: data.meta.total
-                    //     }
-                    // })))
                 }
             } catch (error) {
                 console.error(error)
-                if (categoryHttp.isCancelledRequest(error)){
+                if (videoHttp.isCancelledRequest(error)){
                     return
                 }
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {

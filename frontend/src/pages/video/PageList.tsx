@@ -8,14 +8,14 @@ import Table from './Table'
 const PageList = () => {
 
     return (
-       <Page title="Listagem categorias">
+       <Page title="Listagem videos">
            <Box dir="rtl" paddingBottom={2}>
             <Fab 
-                title="Adicionar categoria" 
+                title="Adicionar video" 
                 size="small"
                 color="secondary"  
                 component={Link} 
-                to="/categories/create"
+                to="/videos/create"
             >
                 <AddIcon/>
             </Fab>
