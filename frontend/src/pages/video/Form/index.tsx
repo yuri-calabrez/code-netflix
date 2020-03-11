@@ -125,7 +125,6 @@ const Form = () => {
             try {
                 const {data} = await videoHttp.get(id)
                 if (isSubscribed) {
-                    console.log('video:', data.data)
                     setVideo(data.data)
                     reset(data.data)
                 }
@@ -153,7 +152,9 @@ const Form = () => {
 
         setLoading(true)
         try {
-            const http = !video ? videoHttp.create(sendData) : videoHttp.update(video.id, sendData)
+            const http = !video 
+                ? videoHttp.create(sendData) 
+                : videoHttp.update(video.id, {...sendData, _method: 'PUT'}, {http: {usePost: true}})
             const {data} = await http
 
             snackbar.enqueueSnackbar('Vídeo salvo com sucesso!', {
