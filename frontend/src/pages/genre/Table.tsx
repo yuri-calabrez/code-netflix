@@ -207,6 +207,7 @@ const Table = () => {
                     }
                 })
                 if (subscribed.current) {
+                    console.log(data.data)
                     setData(data.data)
                     setTotalRecords(data.meta.total)
                 }

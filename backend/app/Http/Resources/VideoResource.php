@@ -18,6 +18,7 @@ class VideoResource extends JsonResource
         $newFields = [
             'categories' => CategoryResource::collection($this->categories),
             'genres' => GenreResource::collection($this->genres),
+            'cast_members' => CastMemberResource::collection($this->castMembers),
             'video_file' => $this->video_file_url,
             'trailer_file' => $this->trailer_file_url,
             'thumb_file' => $this->thumb_file_url,
