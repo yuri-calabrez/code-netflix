@@ -12,6 +12,8 @@ import EditIcon from '@material-ui/icons/Edit'
 import { Link } from 'react-router-dom'
 import * as yup from '../../util/vendor/yup'
 import {invert} from 'lodash'
+import useDeleteCollection from '../../hooks/useDeleteCollection'
+import DeleteDialog from '../../components/DeleteDialog'
 
 const castMemberNames = Object.values(CastMemberTypeMap)
 
@@ -91,6 +93,7 @@ const Table = () => {
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<CastMember[]>([])
     const [loading, setLoading] = React.useState<boolean>(false)
+    const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
 
     const {
@@ -177,6 +180,9 @@ const Table = () => {
                 if (subscribed.current) {
                     setData(data.data)
                     setTotalRecords(data.meta.total)
+                    if (openDeleteDialog) {
+                        setOpenDeleteDialog(false)
+                    }
                 }
             } catch (error) {
                 console.error(error)
@@ -190,41 +196,80 @@ const Table = () => {
             }
     }
 
+    function deleteRows(confirmed: boolean) {
+        if (!confirmed) {
+            setOpenDeleteDialog(false)
+            return
+        }
+
+        const ids = rowsToDelete
+            .data
+            .map(value => data[value.index].id)
+            .join(',')
+        
+        castMemberHttp
+            .deleteCollection({ids})
+            .then(response => {
+                snackbar.enqueueSnackbar('Registros excluidos com sucesso!', {
+                    variant: 'success'
+                })
+                if (rowsToDelete.data.length === filterState.pagination.per_page && filterState.pagination.page > 1) {
+                    const page = filterState.pagination.page - 2
+                    filterManager.changePage(page)
+                } else {
+                    getData()
+                }
+            })
+            .catch(error => {
+                console.error(error)
+                snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+                    variant: 'error'
+                })
+            })
+    }
+
     return (
-        <DefaultTable 
-            columns={columns}
-            title=""
-            data={data}
-            loading={loading}
-            debouncedSearchTime={debouncedSearchTime}
-            ref={tableRef}
-            options={{
-                serverSide: true,
-                serverSideFilterList,
-                searchText: filterState.search as any,
-                page: filterState.pagination.page - 1,
-                rowsPerPage: filterState.pagination.per_page,
-                count: totalRecords,
-                onFilterChange: (column, filterList) => {
-                    const columnIndex = columns.findIndex(c => c.name === column)
-                    filterManager.changeExtraFilter({
-                        [column]: filterList[columnIndex].length ? filterList[columnIndex][0] : null
-                    })
-                },
-                rowsPerPageOptions,
-                customToolbar: () => (
-                    <FilterResetButton
-                        handleClick={() => {
-                           filterManager.resetFilter()
-                        }}
-                    />
-                ),
-                onSearchChange: (value) => filterManager.changeSearch(value),
-                onChangePage:(page) => filterManager.changePage(page),
-                onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
-                onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction)
-            }}
-        />
+        <>
+            <DeleteDialog open={openDeleteDialog} handleClose={deleteRows}/>
+            <DefaultTable 
+                columns={columns}
+                title=""
+                data={data}
+                loading={loading}
+                debouncedSearchTime={debouncedSearchTime}
+                ref={tableRef}
+                options={{
+                    serverSide: true,
+                    serverSideFilterList,
+                    searchText: filterState.search as any,
+                    page: filterState.pagination.page - 1,
+                    rowsPerPage: filterState.pagination.per_page,
+                    count: totalRecords,
+                    onFilterChange: (column, filterList) => {
+                        const columnIndex = columns.findIndex(c => c.name === column)
+                        filterManager.changeExtraFilter({
+                            [column]: filterList[columnIndex].length ? filterList[columnIndex][0] : null
+                        })
+                    },
+                    rowsPerPageOptions,
+                    customToolbar: () => (
+                        <FilterResetButton
+                            handleClick={() => {
+                            filterManager.resetFilter()
+                            }}
+                        />
+                    ),
+                    onSearchChange: (value) => filterManager.changeSearch(value),
+                    onChangePage:(page) => filterManager.changePage(page),
+                    onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
+                    onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction),
+                    onRowsDelete: (rowsDeleted: any[]) => {
+                        setRowsToDelete(rowsDeleted as any)
+                        return false
+                    }
+                }}
+            />
+        </>
     )
 }
 

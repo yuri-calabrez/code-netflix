@@ -153,7 +153,6 @@ const Form = () => {
         sendData['cast_members_id'] = formData['cast_members'].map(cast_member => cast_member.id)
         sendData['categories_id'] = formData['categories'].map(category => category.id)
         sendData['genres_id'] = formData['genres'].map(genre => genre.id)
-
         setLoading(true)
         try {
             const http = !video 
