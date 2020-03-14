@@ -1,0 +1,30 @@
+import * as React from 'react'
+import { LinearProgress, MuiThemeProvider, Theme } from "@material-ui/core"
+
+function makeLocalTheme(theme: Theme):Theme {
+    return {
+        ...theme,
+        palette: {
+            ...theme.palette,
+            primary: theme.palette.error,
+            type: 'dark'
+        }
+    }
+}
+
+const Spinner = () => {
+    return (
+        <MuiThemeProvider theme={makeLocalTheme}>
+            <LinearProgress 
+                color="primary"
+                style={{
+                    position: 'fixed',
+                    width: '100%',
+                    zIndex: 999999
+                }}
+            />
+        </MuiThemeProvider>
+    )
+}
+
+export default Spinner
