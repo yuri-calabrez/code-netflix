@@ -15,6 +15,7 @@ import * as yup from '../../util/vendor/yup'
 import categoryHttp from '../../util/http/category-http'
 import useDeleteCollection from '../../hooks/useDeleteCollection'
 import DeleteDialog from '../../components/DeleteDialog'
+import LoadingContext from '../../components/loading/LoadigContext'
 
 
 
@@ -103,7 +104,7 @@ const Table = () => {
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Genre[]>([])
     const [categories, setCategories] = React.useState<Category[]>([])
-    const [loading, setLoading] = React.useState<boolean>(false)
+    const loading = React.useContext(LoadingContext)
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
 
@@ -193,7 +194,6 @@ const Table = () => {
     ])
 
     async function getData() {
-        setLoading(true)
             try {
                 const {data} = await genreHttp.list<ListResponse<Genre>>({
                     queryParams: {
@@ -224,8 +224,6 @@ const Table = () => {
                         variant: 'error'
                     })
                 }
-            } finally {
-                setLoading(false)
             }
     }
 

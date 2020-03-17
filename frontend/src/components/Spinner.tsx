@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { LinearProgress, MuiThemeProvider, Theme } from "@material-ui/core"
+import { LinearProgress, MuiThemeProvider, Theme, Fade } from "@material-ui/core"
+import LoadingContext from './loading/LoadigContext'
 
 function makeLocalTheme(theme: Theme):Theme {
     return {
@@ -13,16 +14,19 @@ function makeLocalTheme(theme: Theme):Theme {
 }
 
 const Spinner = () => {
+    const loading = React.useContext(LoadingContext)
     return (
         <MuiThemeProvider theme={makeLocalTheme}>
-            <LinearProgress 
-                color="primary"
-                style={{
-                    position: 'fixed',
-                    width: '100%',
-                    zIndex: 999999
-                }}
-            />
+            <Fade in={loading}>
+                <LinearProgress 
+                    color="primary"
+                    style={{
+                        position: 'fixed',
+                        width: '100%',
+                        zIndex: 999999
+                    }}
+                />
+            </Fade>
         </MuiThemeProvider>
     )
 }

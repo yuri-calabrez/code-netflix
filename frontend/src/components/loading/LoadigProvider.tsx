@@ -1,37 +1,50 @@
 import * as React from 'react'
-import {useState, useEffect} from 'react'
+import {useState, useMemo, useEffect} from 'react'
 import LoadingContext from './LoadigContext'
-import axios from 'axios'
+import { addGlobalRequestInterceptor, addGlobalResponseInterceptor, removeGlobalRequestInterceptor, removeGlobalResponseInterceptor } from '../../util/http'
 
 export const LoadingProvider = (props) => {
     const [loading, setLoading] = useState<boolean>(false)
+    const [countRequest, setCountRequest] = useState(0)
 
-    useEffect(() => {
+    useMemo(() => {
         let isSubscribed = true
-        axios.interceptors.request.use((config) => {
+        const requestIds = addGlobalRequestInterceptor((config) => {
             if (isSubscribed) {
                 setLoading(true)
+                setCountRequest((prevCountRequest) => prevCountRequest + 1)
             }
             return config
         })
-    
-        axios.interceptors.response.use((response) => {
+
+        const responseIds = addGlobalResponseInterceptor((response) => {
             if (isSubscribed) {
-                setLoading(false)
+                decrementCountRequest()
             }
             return response
         }, (error) => {
             if (isSubscribed) {
-                setLoading(false)
+                decrementCountRequest()
             }
             return Promise.reject(error)
         })
+
         return () => {
             isSubscribed = false
+            removeGlobalRequestInterceptor(requestIds)
+            removeGlobalResponseInterceptor(responseIds)
         }
-    }, [])
-    
+    }, [true])
 
+    useEffect(() => {
+        if (!countRequest) {
+            setLoading(false)
+        }
+    }, [countRequest])
+    
+    function decrementCountRequest() {
+        setCountRequest((prevCountRequest) => prevCountRequest - 1)
+    }
     return (
         <LoadingContext.Provider value={loading}>
             {props.children}

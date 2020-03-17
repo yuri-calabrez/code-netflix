@@ -14,6 +14,7 @@ import * as yup from '../../util/vendor/yup'
 import {invert} from 'lodash'
 import useDeleteCollection from '../../hooks/useDeleteCollection'
 import DeleteDialog from '../../components/DeleteDialog'
+import LoadingContext from '../../components/loading/LoadigContext'
 
 const castMemberNames = Object.values(CastMemberTypeMap)
 
@@ -92,7 +93,7 @@ const Table = () => {
     const snackbar = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<CastMember[]>([])
-    const [loading, setLoading] = React.useState<boolean>(false)
+    const loading = React.useContext(LoadingContext)
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
 
@@ -144,7 +145,6 @@ const Table = () => {
         serverSideFilterList[indexColumnType] = [typeFilterValue]
     }
 
-    console.log(serverSideFilterList)
     React.useEffect(() => {
         subscribed.current = true
         filterManager.pushHistory()
@@ -161,7 +161,6 @@ const Table = () => {
     ])
 
     async function getData() {
-        setLoading(true)
             try {
                 const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
                     queryParams: {
@@ -191,8 +190,6 @@ const Table = () => {
                         variant: 'error'
                     })
                 }
-            } finally {
-                setLoading(false)
             }
     }
 
