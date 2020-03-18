@@ -87,4 +87,27 @@ abstract class BasicCrudController extends Controller
     {
         return $this->model()::query();
     }
+
+    public function destroyCollection(Request $request)
+    {
+        $data = $this->validadeIds($request);
+
+        $this->model()::whereIn('id', $data['ids'])->delete();
+        return response()->noContent();
+    }
+
+    protected function validadeIds(Request $request)
+    {
+        $model = $this->model();
+        $ids = explode(',', $request->get('ids'));
+        $validator = \Validator::make(
+            [
+                'ids' => $ids
+            ],
+            [
+                'ids' => 'required|exists:'. (new $model)->getTable(). ',id'
+            ]
+        );
+        return $validator->validate();
+    }
 }

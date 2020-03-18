@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Video;
 use App\Traits\{UuidTrait, UploadFilesTrait};
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Tests\TestCase;
 
@@ -42,7 +43,7 @@ class VideoUnitTest extends TestCase
 
     public function testIfUseTraits()
     {
-        $trais = [SoftDeletes::class, UuidTrait::class, UploadFilesTrait::class];
+        $trais = [SoftDeletes::class, UuidTrait::class, UploadFilesTrait::class, Filterable::class];
         $videoTraits = array_keys(class_uses(Video::class));
         $this->assertEquals($trais, $videoTraits);
     }

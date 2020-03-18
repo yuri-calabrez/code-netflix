@@ -19,7 +19,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['namespace' => 'Api'], function () {
     Route::resource('categories', 'CategoryController', ['except' => ['create', 'edit']]);
+    Route::delete('categories', 'CategoryController@destroyCollection');
     Route::resource('genres', 'GenreController', ['except' => ['create', 'edit']]);
+    Route::delete('genres', 'GenreController@destroyCollection');
     Route::resource('cast_members', 'CastMemberController', ['except' => ['create', 'edit']]);
+    Route::delete('cast_members', 'CastMemberController@destroyCollection');
     Route::resource('videos', 'VideoController', ['except' => ['create', 'edit']]);
+    Route::delete('videos', 'VideoController@destroyCollection');
 });

@@ -15,6 +15,7 @@ import CategoryField, { CategoryFieldComponent } from './CategoryField'
 import CastMemberField, { CastMemberFieldComponent } from './CastMemberField'
 import {omit, zipObject} from 'lodash'
 import { InputFileComponent } from '../../../components/InputFile'
+import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -83,7 +84,8 @@ const Form = () => {
         errors,
         reset, 
         watch,
-        triggerValidation
+        triggerValidation,
+        formState
     } = useForm({
         validationSchema,
         defaultValues: {
@@ -94,6 +96,8 @@ const Form = () => {
             opened: false
         }
     })
+
+    useSnackbarFormError(formState.submitCount, errors)
 
     const snackbar = useSnackbar()
     const history = useHistory()
@@ -149,7 +153,6 @@ const Form = () => {
         sendData['cast_members_id'] = formData['cast_members'].map(cast_member => cast_member.id)
         sendData['categories_id'] = formData['categories'].map(category => category.id)
         sendData['genres_id'] = formData['genres'].map(genre => genre.id)
-
         setLoading(true)
         try {
             const http = !video 

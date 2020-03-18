@@ -11,6 +11,9 @@ import EditIcon from '@material-ui/icons/Edit'
 import { FilterResetButton } from '../../components/Table/FilterResetButton'
 import { Link } from 'react-router-dom'
 import useFilter from '../../hooks/useFilter'
+import useDeleteCollection from '../../hooks/useDeleteCollection'
+import DeleteDialog from '../../components/DeleteDialog'
+import LoadingContext from '../../components/loading/LoadigContext'
 
 const columnsDefinition: TableColumn[] = [
     {
@@ -77,7 +80,8 @@ const Table = () => {
     const snackbar = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
-    const [loading, setLoading] = React.useState<boolean>(false)
+    const loading = React.useContext(LoadingContext)
+    const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
 
     const {
@@ -110,7 +114,6 @@ const Table = () => {
     ])
 
     async function getData() {
-        setLoading(true)
             try {
                 const {data} = await categoryHttp.list<ListResponse<Category>>({
                     queryParams: {
@@ -124,6 +127,9 @@ const Table = () => {
                 if (subscribed.current) {
                     setData(data.data)
                     setTotalRecords(data.meta.total)
+                    if (openDeleteDialog) {
+                        setOpenDeleteDialog(false)
+                    }
                     // setSearchState((prevState => ({
                     //     ...prevState,
                     //     pagination: {
@@ -140,39 +146,76 @@ const Table = () => {
                 snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
                     variant: 'error'
                 })
-            } finally {
-                setLoading(false)
             }
     }
 
+    function deleteRows(confirmed: boolean) {
+        if (!confirmed) {
+            setOpenDeleteDialog(false)
+            return
+        }
+
+        const ids = rowsToDelete
+            .data
+            .map(value => data[value.index].id)
+            .join(',')
+        
+        categoryHttp
+            .deleteCollection({ids})
+            .then(response => {
+                snackbar.enqueueSnackbar('Registros excluidos com sucesso!', {
+                    variant: 'success'
+                })
+                if (rowsToDelete.data.length === filterState.pagination.per_page && filterState.pagination.page > 1) {
+                    const page = filterState.pagination.page - 2
+                    filterManager.changePage(page)
+                } else {
+                    getData()
+                }
+            })
+            .catch(error => {
+                console.error(error)
+                snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+                    variant: 'error'
+                })
+            })
+    }
+
     return (
-        <DefaultTable 
-            columns={columns}
-            title=""
-            data={data}
-            loading={loading}
-            debouncedSearchTime={debouncedSearchTime}
-            ref={tableRef}
-            options={{
-                serverSide: true,
-                searchText: filterState.search as any,
-                page: filterState.pagination.page - 1,
-                rowsPerPage: filterState.pagination.per_page,
-                count: totalRecords,
-                rowsPerPageOptions,
-                customToolbar: () => (
-                    <FilterResetButton
-                        handleClick={() => {
-                           filterManager.resetFilter()
-                        }}
-                    />
-                ),
-                onSearchChange: (value) => filterManager.changeSearch(value),
-                onChangePage:(page) => filterManager.changePage(page),
-                onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
-                onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction)
-            }}
-        />
+        <>
+            <DeleteDialog open={openDeleteDialog} handleClose={deleteRows}/>
+            <DefaultTable 
+                columns={columns}
+                title=""
+                data={data}
+                loading={loading}
+                debouncedSearchTime={debouncedSearchTime}
+                ref={tableRef}
+                options={{
+                    serverSide: true,
+                    searchText: filterState.search as any,
+                    page: filterState.pagination.page - 1,
+                    rowsPerPage: filterState.pagination.per_page,
+                    count: totalRecords,
+                    rowsPerPageOptions,
+                    customToolbar: () => (
+                        <FilterResetButton
+                            handleClick={() => {
+                            filterManager.resetFilter()
+                            }}
+                        />
+                    ),
+                    onSearchChange: (value) => filterManager.changeSearch(value),
+                    onChangePage:(page) => filterManager.changePage(page),
+                    onChangeRowsPerPage:(perPage) => filterManager.changeRowsPerPage(perPage),
+                    onColumnSortChange: (changedColumn: string, direction: string) => filterManager.changeColumnSort(changedColumn, direction),
+                    onRowsDelete: (rowsDeleted: any[]) => {
+                        setRowsToDelete(rowsDeleted as any)
+                        return false
+                    }
+                }}
+            />
+        </>
     )
 }
 
