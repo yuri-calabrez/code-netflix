@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api\VideoController;
 
-use App\Models\{Category, Genre, Video};
+use App\Models\{CastMember, Category, Genre, Video};
 use Illuminate\Http\UploadedFile;
 use Tests\Traits\TestValidations;
 
@@ -48,12 +48,14 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         $category = factory(Category::class)->create();
         $genre = factory(Genre::class)->create();
         $genre->categories()->sync($category->id);
+        $castMember = factory(CastMember::class)->create();
 
         \Storage::fake();
         $files = $this->getFiles();
         $response = $this->json('POST', $this->routeStore(), $this->sendData + [
             'categories_id' => [$category->id],
-            'genres_id' => [$genre->id]
+            'genres_id' => [$genre->id],
+            'cast_members_id' => [$castMember->id]
         ] + $files);
         $response->assertStatus(201);
 
@@ -69,12 +71,14 @@ class VideoControllerUploadsTest extends BaseVideoControllerTestCase
         $category = factory(Category::class)->create();
         $genre = factory(Genre::class)->create();
         $genre->categories()->sync($category->id);
+        $castMember = factory(CastMember::class)->create();
 
         \Storage::fake();
         $files = $this->getFiles();
         $response = $this->json('PUT', $this->routeUpdate(), $this->sendData + [
             'categories_id' => [$category->id],
-            'genres_id' => [$genre->id]
+            'genres_id' => [$genre->id],
+            'cast_members_id' => [$castMember->id]
         ] + $files);
 
         $response->assertStatus(200);
