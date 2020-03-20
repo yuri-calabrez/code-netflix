@@ -16,6 +16,7 @@ import CastMemberField, { CastMemberFieldComponent } from './CastMemberField'
 import {omit, zipObject} from 'lodash'
 import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
+import SnackbarUpload from '../../../components/SnackbarUpload'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -120,6 +121,19 @@ const Form = () => {
 
     React.useEffect(() => {
         let isSubscribed = true;
+
+        snackbar.enqueueSnackbar('', {
+            key: 'snackbar-upload',
+            persist: true,
+            anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'right'
+            },
+            content: (key, message) => {
+                const id = key as any
+                return <SnackbarUpload id={id}/>
+            }
+        })
 
         if (!id) {
             return
