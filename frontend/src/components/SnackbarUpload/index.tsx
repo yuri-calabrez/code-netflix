@@ -4,6 +4,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import CloseIcon from "@material-ui/icons/Close"
 import { useSnackbar } from 'notistack'
 import classNames from 'classnames'
+import UploadItem from './UploadItem'
 
 interface SnackbarUploadInterface {
     id: string | number
@@ -36,6 +37,10 @@ const useStyles = makeStyles((theme: Theme) => ({
         transition: theme.transitions.create('transform', {
             duration: theme.transitions.duration.shortest
         })
+    },
+    list: {
+        paddingTop: "0px",
+        paddingBottom: "0px"
     }
 }))
 
@@ -68,8 +73,8 @@ const SnackbarUpload = React.forwardRef<any, SnackbarUploadInterface>((props, re
                 </div>
             </CardActions>
             <Collapse in={expanded}>
-                <List>
-                    Lista
+                <List className={classes.list}>
+                    <UploadItem/>
                 </List>
             </Collapse>
         </Card>
