@@ -19,11 +19,17 @@ export interface State {
     uploads: Upload[]
 }
 
-export interface AddUploadAcrion extends AnyAction {
+export interface AddUploadAction extends AnyAction {
     payload: {
         video: Video,
         files: Array<{file:File, fileField: string}>
     }
 }
 
-export type Actions = AddUploadAcrion
+export interface RemoveUploadAction extends AnyAction {
+    payload: {
+        id: string
+    }
+}
+
+export type Actions = AddUploadAction | RemoveUploadAction

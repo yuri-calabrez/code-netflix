@@ -17,6 +17,9 @@ import {omit, zipObject} from 'lodash'
 import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
 import SnackbarUpload from '../../../components/SnackbarUpload'
+import { useSelector, useDispatch } from 'react-redux'
+import { State as UploadState, Upload } from '../../../store/upload/types'
+import { Creators } from '../../../store/upload'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -113,6 +116,26 @@ const Form = () => {
     const castMemberRef = React.useRef() as React.MutableRefObject<CastMemberFieldComponent>
     const categoryRef = React.useRef() as React.MutableRefObject<CategoryFieldComponent>
     const genreRef = React.useRef() as React.MutableRefObject<GenreFieldComponent>
+
+    const uploads = useSelector<UploadState, Upload[]>((state) => state.uploads)
+    const dispatch = useDispatch()
+
+    setTimeout(() => {
+        const obj: any = {
+            video: {
+                id: '1',
+                title: 'teste'
+            },
+            files: [
+                {
+                    file: new File([""], "teste.mp4")
+                }
+            ]
+        }
+        dispatch(Creators.addUpload(obj))
+    }, 1000)
+
+    console.log(uploads)
 
     React.useEffect(() => {
         ['rating', 'opened', 'genres', 'categories', 'cast_members', ...fileFields].forEach(name => register({name}))
