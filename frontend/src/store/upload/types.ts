@@ -32,4 +32,23 @@ export interface RemoveUploadAction extends AnyAction {
     }
 }
 
-export type Actions = AddUploadAction | RemoveUploadAction
+export interface UpdateProgressAction extends AnyAction {
+    payload: {
+        video: Video
+        fileField: string
+        progress: number
+    }
+}
+
+export interface SetUploadErrorAction extends AnyAction {
+    payload: {
+        video: Video
+        fileField: string
+        error: AxiosError
+    }
+}
+
+export type Actions = AddUploadAction 
+    | RemoveUploadAction 
+    | UpdateProgressAction 
+    | SetUploadErrorAction
