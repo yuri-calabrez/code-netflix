@@ -35,7 +35,7 @@ export default class HttpResource {
         return this.http.post<T>(this.resource, sendData)
     }
 
-    update<T = any>(id, data, options?: {http?: {usePost: boolean}}): Promise<AxiosResponse<T>> {
+    update<T = any>(id, data, options?: {http?: {usePost: boolean}, config?: AxiosRequestConfig}): Promise<AxiosResponse<T>> {
         let sendData = data
         if (this.containsFile(data)) {
             sendData = this.getFormData(data)

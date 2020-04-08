@@ -124,7 +124,7 @@ const Form = () => {
         setTimeout(() => {
             const obj: any = {
                 video: {
-                    id: '1',
+                    id: '4cee7870-12eb-43f0-bd44-1d1a053a4b0e',
                     title: 'teste'
                 },
                 files: [
