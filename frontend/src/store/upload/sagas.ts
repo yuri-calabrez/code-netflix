@@ -11,8 +11,13 @@ export function* uploadWatcherSaga() {
     while(true) {
         const {payload}: AddUploadAction = yield take(newFilesChannel)
         for (const fileInfo of payload.files) {
-            const response = yield call(uploadFile, {video: payload.video, fileInfo: fileInfo})
-            console.log(response)
+            try {
+                const response = yield call(uploadFile, {video: payload.video, fileInfo: fileInfo})
+                console.log(response)
+            } catch (e) {
+                console.log(e)
+            }
+            
         }
         
         console.log(payload)
@@ -34,7 +39,12 @@ function* uploadFile({video, fileInfo}: {video: Video, fileInfo: FileInfo}) {
                 progress
             }))
        } catch (e) {
-           console.log(e)
+           yield put(Creators.setUploadError({
+               video,
+               fileField: fileInfo.fileField,
+               error: e
+           }))
+           throw e
        }
     }
 }
@@ -49,6 +59,9 @@ function sendUpload({id, fileInfo}: {id: string, fileInfo: FileInfo}) {
                 usePost: true
             },
             config: {
+                headers: {
+                    ignoreLoading: true
+                },
                 onUploadProgress(progressEvent: ProgressEvent){
                     if(progressEvent.lengthComputable){
                         const progress = progressEvent.loaded / progressEvent.total
