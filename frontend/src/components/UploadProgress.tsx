@@ -2,6 +2,7 @@ import * as React from 'react'
 import {makeStyles, Theme, CircularProgress, Fade } from '@material-ui/core'
 import { grey } from '@material-ui/core/colors'
 import { Upload, FileUpload } from '../store/upload/types'
+import { hasError } from '../store/upload/getters'
 
 interface UploadProgressProps {
     size: number
@@ -24,6 +25,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 const UploadProgress: React.FC<UploadProgressProps> = (props) => {
     const classes = useStyles()
     const {size, uploadOrFile} = props
+    const error = hasError(uploadOrFile)
+
     return (
         <Fade in={uploadOrFile.progress < 1} timeout={{enter: 2000, exit: 2000}}>
             <div className={classes.progressContainer}>
@@ -35,7 +38,7 @@ const UploadProgress: React.FC<UploadProgressProps> = (props) => {
                 />
                 <CircularProgress
                     variant="static"
-                    value={uploadOrFile.progress * 100}
+                    value={hasError ? 0 : uploadOrFile.progress * 100}
                     className={classes.progress}
                     size={size}
                 />

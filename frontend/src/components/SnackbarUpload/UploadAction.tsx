@@ -6,6 +6,7 @@ import DeleteIcon from "@material-ui/icons/Delete"
 import { Upload } from '../../store/upload/types'
 import { useDispatch } from 'react-redux'
 import { Creators } from '../../store/upload'
+import { hasError } from '../../store/upload/getters'
 
 interface UploadActionProps {
     upload: Upload
@@ -27,21 +28,25 @@ const UploadAction: React.FC<UploadActionProps> = (props) => {
     const classes = useStyles()
     const {upload} = props
     const dispatch = useDispatch()
+    const error = hasError(upload)
+    
     return (
         <Fade in={true} timeout={{enter: 1000}}>
             <ListItemSecondaryAction>
                 <span>
                     {
-                        upload.progress === 1 && (
+                        upload.progress === 1 && !hasError && (
                             <IconButton className={classes.successIcon} edge="end">
                                 <CheckCircleIcon/>
                             </IconButton>
                         )
                     }
                     {
-                         <IconButton className={classes.errorIcon} edge="end">
-                         <ErrorIcon/>
-                     </IconButton>
+                         hasError && (
+                            <IconButton className={classes.errorIcon} edge="end">
+                                <ErrorIcon/>
+                            </IconButton>
+                        )
                     }
                 </span>
 

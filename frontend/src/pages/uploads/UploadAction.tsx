@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { Upload, FileUpload } from '../../store/upload/types'
 import { useDispatch } from 'react-redux'
 import { Creators } from '../../store/upload'
+import { hasError } from '../../store/upload/getters'
 
 const useStyles = makeStyles((theme: Theme) => {
     return ({
@@ -35,11 +36,17 @@ const UploadAction: React.FC<UploadActionProps> = (props) => {
     const classes = useStyles()
     const {uploadOrFile} = props
     const dispatch = useDispatch()
+    const error = hasError(uploadOrFile)
+
     return (
         <Fade in={true} timeout={{enter: 1000}}>
             <>
-                {uploadOrFile.progress === 1 && <CheckCircleIcon className={classes.successIcon}/>}
-                <ErrorIcon className={classes.errorIcon}/>
+                {
+                    uploadOrFile.progress === 1 && 
+                    !error &&
+                     <CheckCircleIcon className={classes.successIcon}/>
+                }
+                {error && <ErrorIcon className={classes.errorIcon}/>}
                 <>
                     <Divider className={classes.divider} orientation="vertical"/>
                     <IconButton
