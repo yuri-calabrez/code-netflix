@@ -45,7 +45,7 @@ export const LoadingProvider = (props) => {
     }, [countRequest])
     
     function decrementCountRequest() {
-        setCountRequest((prevCountRequest) => prevCountRequest - 1)
+        setCountRequest((prevCountRequest) => prevCountRequest <= 0 ? 0 : prevCountRequest - 1)
     }
     return (
         <LoadingContext.Provider value={loading}>
