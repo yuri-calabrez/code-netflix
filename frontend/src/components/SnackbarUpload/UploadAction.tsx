@@ -1,11 +1,14 @@
 import * as React from 'react'
-import { ListItem, ListItemIcon, ListItemText, Typography, Divider, makeStyles, Theme, Tooltip, CircularProgress, Fade, ListItemSecondaryAction, IconButton } from '@material-ui/core'
+import { makeStyles, Theme, Fade, ListItemSecondaryAction, IconButton } from '@material-ui/core'
 import CheckCircleIcon from "@material-ui/icons/CheckCircle"
 import ErrorIcon from "@material-ui/icons/Error"
 import DeleteIcon from "@material-ui/icons/Delete"
+import { Upload } from '../../store/upload/types'
+import { useDispatch } from 'react-redux'
+import { Creators } from '../../store/upload'
 
 interface UploadActionProps {
-  
+    upload: Upload
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -22,14 +25,18 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const UploadAction: React.FC<UploadActionProps> = (props) => {
     const classes = useStyles()
+    const {upload} = props
+    const dispatch = useDispatch()
     return (
         <Fade in={true} timeout={{enter: 1000}}>
             <ListItemSecondaryAction>
                 <span>
                     {
-                        <IconButton className={classes.successIcon} edge="end">
-                            <CheckCircleIcon/>
-                        </IconButton>
+                        upload.progress === 1 && (
+                            <IconButton className={classes.successIcon} edge="end">
+                                <CheckCircleIcon/>
+                            </IconButton>
+                        )
                     }
                     {
                          <IconButton className={classes.errorIcon} edge="end">
@@ -39,7 +46,11 @@ const UploadAction: React.FC<UploadActionProps> = (props) => {
                 </span>
 
                 <span>
-                    <IconButton className={classes.deleteIcon} edge="end">
+                    <IconButton 
+                        className={classes.deleteIcon} 
+                        edge="end"
+                        onClick={() => dispatch(Creators.removeUpload({id: upload.video.id}))}
+                    >
                         <DeleteIcon/>
                     </IconButton>
                 </span>

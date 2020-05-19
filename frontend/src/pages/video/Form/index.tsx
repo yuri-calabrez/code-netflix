@@ -18,7 +18,7 @@ import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
 import SnackbarUpload from '../../../components/SnackbarUpload'
 import { useSelector, useDispatch } from 'react-redux'
-import { State as UploadState, Upload } from '../../../store/upload/types'
+import { UploadState, Upload, UploadModule } from '../../../store/upload/types'
 import { Creators } from '../../../store/upload'
 
 const validationSchema = yup.object().shape({
@@ -117,7 +117,7 @@ const Form = () => {
     const categoryRef = React.useRef() as React.MutableRefObject<CategoryFieldComponent>
     const genreRef = React.useRef() as React.MutableRefObject<GenreFieldComponent>
 
-    const uploads = useSelector<UploadState, Upload[]>((state) => state.uploads)
+    const uploads = useSelector<UploadModule, Upload[]>((state) => state.upload.uploads)
     const dispatch = useDispatch()
 
     React.useMemo(() => {

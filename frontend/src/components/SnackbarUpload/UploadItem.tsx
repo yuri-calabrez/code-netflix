@@ -2,10 +2,11 @@ import * as React from 'react'
 import { ListItem, ListItemIcon, ListItemText, Typography, Divider, makeStyles, Theme, Tooltip } from '@material-ui/core'
 import MovieIcon from "@material-ui/icons/Movie"
 import UploadProgress from '../UploadProgress'
-import UploadAction from '../UploadAction'
+import UploadAction from './UploadAction'
+import { Upload } from '../../store/upload/types'
 
 interface UploadItemProps {
-
+    upload: Upload
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }))
 
 const UploadItem: React.FC<UploadItemProps> = (props) => {
+    const {upload} = props
     const classes = useStyles()
 
     return (
@@ -43,12 +45,12 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
                         className={classes.listItemText}
                         primary={
                             <Typography noWrap={true} variant="subtitle2" color="primary">
-                                Filme aqui
+                               {upload.video.title}
                             </Typography>
                         }
                     />
-                    {/* <UploadProgress size={30}/> */}
-                    <UploadAction/>
+                    {<UploadProgress size={30} uploadOrFile={upload}/>}
+                    <UploadAction upload={upload}/>
                 </ListItem>
             </Tooltip>
             <Divider component="li"/>

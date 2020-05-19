@@ -5,6 +5,9 @@ import CloseIcon from "@material-ui/icons/Close"
 import { useSnackbar } from 'notistack'
 import classNames from 'classnames'
 import UploadItem from './UploadItem'
+import { useSelector } from 'react-redux'
+import { Upload, UploadModule } from '../../store/upload/types'
+import { countInProgress } from '../../store/upload/getters'
 
 interface SnackbarUploadInterface {
     id: string | number
@@ -49,12 +52,15 @@ const SnackbarUpload = React.forwardRef<any, SnackbarUploadInterface>((props, re
     const {closeSnackbar} = useSnackbar()
     const classes = useStyles()
     const [expanded, setExpanded] = React.useState(true)
+    const uploads = useSelector<UploadModule, Upload[]>((state) => state.upload.uploads)
+
+    const totalInProgress = countInProgress(uploads)
 
     return (
         <Card ref={ref} className={classes.card}>
             <CardActions classes={{root: classes.cardActionRoot}}>
                 <Typography variant="subtitle2" className={classes.title}>
-                    Fazendo upload de 10 video(s)
+                    Fazendo upload de {totalInProgress} video(s)
                 </Typography>
                 <div className={classes.icons}>
                     <IconButton 
@@ -74,7 +80,12 @@ const SnackbarUpload = React.forwardRef<any, SnackbarUploadInterface>((props, re
             </CardActions>
             <Collapse in={expanded}>
                 <List className={classes.list}>
-                    <UploadItem/>
+                    {
+                        uploads.map((upload, key) => (
+                            <UploadItem key={key} upload={upload}/>
+                        ))
+                    }
+                    
                 </List>
             </Collapse>
         </Card>
