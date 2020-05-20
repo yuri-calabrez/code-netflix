@@ -16,6 +16,10 @@ import CastMemberField, { CastMemberFieldComponent } from './CastMemberField'
 import {omit, zipObject} from 'lodash'
 import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
+import SnackbarUpload from '../../../components/SnackbarUpload'
+import { useSelector, useDispatch } from 'react-redux'
+import { UploadState, Upload, UploadModule } from '../../../store/upload/types'
+import { Creators } from '../../../store/upload'
 
 const validationSchema = yup.object().shape({
     title: yup.string()
@@ -113,6 +117,47 @@ const Form = () => {
     const categoryRef = React.useRef() as React.MutableRefObject<CategoryFieldComponent>
     const genreRef = React.useRef() as React.MutableRefObject<GenreFieldComponent>
 
+    const uploads = useSelector<UploadModule, Upload[]>((state) => state.upload.uploads)
+    const dispatch = useDispatch()
+
+    React.useMemo(() => {
+        setTimeout(() => {
+            const obj: any = {
+                video: {
+                    id: '4cee7870-12eb-43f0-bd44-1d1a053a4b0e',
+                    title: 'teste'
+                },
+                files: [
+                    {
+                        file: new File([""], "teste.mp4"),
+                        fileField: 'trailer_file'
+                    },
+                    {
+                        file: new File([""], "teste.mp4"),
+                        fileField: 'video_file'
+                    }
+                ]
+            }
+            dispatch(Creators.addUpload(obj))
+            const progress1 = {
+                fileField: 'trailer_file',
+                progress: 10,
+                video: {id: '1'}
+            } as any
+    
+            dispatch(Creators.updateProgress(progress1))
+    
+            const progress2 = {
+                fileField: 'video_file',
+                progress: 20,
+                video: {id: '1'}
+            } as any 
+            dispatch(Creators.updateProgress(progress2))
+        }, 1000)
+    }, [true])
+
+    console.log(uploads)
+
     React.useEffect(() => {
         ['rating', 'opened', 'genres', 'categories', 'cast_members', ...fileFields].forEach(name => register({name}))
     }, [register])
@@ -120,6 +165,19 @@ const Form = () => {
 
     React.useEffect(() => {
         let isSubscribed = true;
+
+        snackbar.enqueueSnackbar('', {
+            key: 'snackbar-upload',
+            persist: true,
+            anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'right'
+            },
+            content: (key, message) => {
+                const id = key as any
+                return <SnackbarUpload id={id}/>
+            }
+        })
 
         if (!id) {
             return

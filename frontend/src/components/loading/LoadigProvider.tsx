@@ -2,6 +2,7 @@ import * as React from 'react'
 import {useState, useMemo, useEffect} from 'react'
 import LoadingContext from './LoadigContext'
 import { addGlobalRequestInterceptor, addGlobalResponseInterceptor, removeGlobalRequestInterceptor, removeGlobalResponseInterceptor } from '../../util/http'
+import {omit} from 'lodash'
 
 export const LoadingProvider = (props) => {
     const [loading, setLoading] = useState<boolean>(false)
@@ -10,10 +11,11 @@ export const LoadingProvider = (props) => {
     useMemo(() => {
         let isSubscribed = true
         const requestIds = addGlobalRequestInterceptor((config) => {
-            if (isSubscribed) {
+            if (isSubscribed && !config.headers.hasOwnProperty('ignoreLoading')) {
                 setLoading(true)
                 setCountRequest((prevCountRequest) => prevCountRequest + 1)
             }
+            config.headers = omit(config.headers, 'ignoreLoading')
             return config
         })
 
@@ -43,7 +45,7 @@ export const LoadingProvider = (props) => {
     }, [countRequest])
     
     function decrementCountRequest() {
-        setCountRequest((prevCountRequest) => prevCountRequest - 1)
+        setCountRequest((prevCountRequest) => prevCountRequest <= 0 ? 0 : prevCountRequest - 1)
     }
     return (
         <LoadingContext.Provider value={loading}>
