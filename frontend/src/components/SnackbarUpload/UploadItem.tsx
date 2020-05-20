@@ -31,16 +31,22 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
     const {upload} = props
     const classes = useStyles()
     const error = hasError(upload)
+    const [itemHover, setItemHover] = React.useState(false)
 
     return (
         <>
             <Tooltip 
                 disableFocusListener
                 disableTouchListener
-                title={hasError ? "Não foi possível fazer o upload, clique para mais detalhes" : ""}
+                title={error ? "Não foi possível fazer o upload, clique para mais detalhes" : ""}
                 placement="left"
             >
-                <ListItem button className={classes.listItem}>
+                <ListItem 
+                    button 
+                    className={classes.listItem}
+                    onMouseOver={() => setItemHover(true)}
+                    onMouseLeave={() => setItemHover(false)}
+                >
                     <ListItemIcon className={classes.movieIcon}>
                         <MovieIcon/>
                     </ListItemIcon>
@@ -54,7 +60,7 @@ const UploadItem: React.FC<UploadItemProps> = (props) => {
                         }
                     />
                     {<UploadProgress size={30} uploadOrFile={upload}/>}
-                    <UploadAction upload={upload}/>
+                    <UploadAction upload={upload} hover={itemHover}/>
                 </ListItem>
             </Tooltip>
             <Divider component="li"/>
