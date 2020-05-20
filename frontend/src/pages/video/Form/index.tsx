@@ -18,7 +18,7 @@ import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
 import SnackbarUpload from '../../../components/SnackbarUpload'
 import { useSelector, useDispatch } from 'react-redux'
-import { UploadState, Upload, UploadModule } from '../../../store/upload/types'
+import { Upload, UploadModule } from '../../../store/upload/types'
 import { Creators } from '../../../store/upload'
 
 const validationSchema = yup.object().shape({

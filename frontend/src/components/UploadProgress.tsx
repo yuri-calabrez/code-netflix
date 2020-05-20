@@ -38,7 +38,7 @@ const UploadProgress: React.FC<UploadProgressProps> = (props) => {
                 />
                 <CircularProgress
                     variant="static"
-                    value={hasError ? 0 : uploadOrFile.progress * 100}
+                    value={error ? 0 : uploadOrFile.progress * 100}
                     className={classes.progress}
                     size={size}
                 />
