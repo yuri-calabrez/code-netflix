@@ -40,7 +40,7 @@ const Form = () => {
     })
 
 
-    const snackbar = useSnackbar()
+    const {enqueueSnackbar} = useSnackbar()
     const history = useHistory()
     const {id} = useParams()
     const [genre, setGenre] = React.useState<Genre | null>(null)
@@ -74,7 +74,7 @@ const Form = () => {
                 }
             } catch(error) {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possívelcarregar as iformações :(', {
+                enqueueSnackbar('Não foi possível carregar as informações :(', {
                     variant: 'error'
                 })
             } finally {
@@ -85,7 +85,7 @@ const Form = () => {
         return () => {
             isSubscribed = false
         }
-    }, [])
+    }, [id, reset, enqueueSnackbar])
 
     async function onSubmit(formData, event) {
         setLoading(true)
@@ -94,7 +94,7 @@ const Form = () => {
             const http = !genre ? genreHttp.create(formData) : genreHttp.update(genre.id, formData)
             const {data} = await http
 
-            snackbar.enqueueSnackbar('Gênero salvo com sucesso!', {
+            enqueueSnackbar('Gênero salvo com sucesso!', {
                 variant: 'success'
             })
 
@@ -108,7 +108,7 @@ const Form = () => {
                 })
         } catch(error) {
             console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível salvar o gênero :(', {
+                enqueueSnackbar('Não foi possível salvar o gênero :(', {
                     variant: 'error'
                 })
         } finally {

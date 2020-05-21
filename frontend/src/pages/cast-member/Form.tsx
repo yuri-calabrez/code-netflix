@@ -36,7 +36,7 @@ const Form = () => {
         validationSchema
     })
 
-    const snackbar = useSnackbar()
+    const {enqueueSnackbar} = useSnackbar()
     const history = useHistory()
     const {id} = useParams()
     const [castMember, setCastMember] = React.useState<CastMember | null>(null)
@@ -65,7 +65,7 @@ const Form = () => {
                 }
             } catch(error) {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
+                enqueueSnackbar('Não foi possível carregar as informações.', {
                     variant: 'error'
                 })
             } finally {
@@ -76,7 +76,7 @@ const Form = () => {
         return () => {
             isSubscribed = false
         }
-    }, [])
+    }, [id, reset, enqueueSnackbar])
 
     const handleChange = event => setValue('type', parseInt(event.target.value))
 
@@ -87,7 +87,7 @@ const Form = () => {
             const http = !castMember ? castMemberHttp.create(formData) : castMemberHttp.update(castMember.id, formData)
             const {data} = await http
 
-            snackbar.enqueueSnackbar('Membro de elenco salvo com sucesso!', {
+            enqueueSnackbar('Membro de elenco salvo com sucesso!', {
                 variant: 'success'
             })
 
@@ -102,7 +102,7 @@ const Form = () => {
 
         } catch(error) {
             console.error(error)
-            snackbar.enqueueSnackbar('Não foi possível salvar o membro de elenco :(', {
+            enqueueSnackbar('Não foi possível salvar o membro de elenco :(', {
                 variant: 'error'
             })
         } finally {
