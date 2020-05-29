@@ -38,7 +38,7 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
     const classes = useStyles()
     const autocompleteRef = React.useRef() as React.MutableRefObject<AsyncAutocompleteComponent>
 
-    function fetchOptions() {
+    const fetchOptions = React.useCallback(() => {
         return autocompleteHttp(
             categoryHttp.list({
                 queryParams: {
@@ -47,7 +47,7 @@ const CategoryField = React.forwardRef<CategoryFieldComponent, CategoryFieldProp
                 }
             })
         ).then(data => data.data)
-    }
+    }, [autocompleteHttp])
 
     React.useImperativeHandle(ref, () => ({
         clear: () => autocompleteRef.current.clear()

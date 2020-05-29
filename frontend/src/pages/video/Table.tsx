@@ -1,9 +1,7 @@
 import * as React from 'react'
 import parseISO from 'date-fns/parseISO'
 import format from 'date-fns/format'
-import categoryHttp from '../../util/http/category-http'
-import { BadgeYes, BadgeNo } from '../../components/Badge'
-import { ListResponse, Category, Video } from '../../util/models'
+import { ListResponse, Video } from '../../util/models'
 import DefaultTable, { TableColumn, MuiDataTableRefComponent } from '../../components/Table'
 import { useSnackbar } from 'notistack'
 import { IconButton } from '@material-ui/core'
@@ -105,7 +103,6 @@ const Table = () => {
         filterManager,
         filterState,
         debouncedFilterState,
-        dispatch,
         totalRecords,
         setTotalRecords} = useFilter({
             columns: columnsDefinition,

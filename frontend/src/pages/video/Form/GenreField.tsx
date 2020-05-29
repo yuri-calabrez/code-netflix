@@ -29,7 +29,7 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
     const {removeItem: removeCategory} = useCollectionManager(categories, setCategories)
     const autocompleteRef = React.useRef() as React.MutableRefObject<AsyncAutocompleteComponent>
 
-    function fetchOptions(searchText) {
+    const fetchOptions = React.useCallback((searchText) => {
         return autocompleteHttp(
             genreHttp.list({
                 queryParams: {
@@ -38,7 +38,7 @@ const GenreField = React.forwardRef<GenreFieldComponent, GenreFieldProps>((props
                 }
             })
         ).then(data => data.data)
-    }
+    }, [autocompleteHttp])
 
     React.useImperativeHandle(ref, () => ({
         clear: () => autocompleteRef.current.clear()
