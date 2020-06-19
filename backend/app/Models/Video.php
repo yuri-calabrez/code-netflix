@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use App\ModelFilters\VideoFilter;
-use App\Traits\{UploadFilesTrait, UuidTrait};
+use App\Traits\{SerializeDateToIso8601Trait, UploadFilesTrait, UuidTrait};
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Video extends Model
 {
-    use SoftDeletes, UuidTrait, UploadFilesTrait, Filterable;
+    use SoftDeletes, UuidTrait, UploadFilesTrait, Filterable, SerializeDateToIso8601Trait;
 
     const RATING_LIST = ['L', '10', '12', '14', '16', '18'];
 
