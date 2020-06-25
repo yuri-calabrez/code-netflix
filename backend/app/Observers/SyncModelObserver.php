@@ -71,6 +71,28 @@ class SyncModelObserver
         }
     }
 
+    public function belongsToManyAttached($relation, $model, $ids)
+    {
+        $modelName = $this->getModelName($model);
+        $relationName = Str::snake($relation);
+        $routingKey = "model.{$modelName}_{$relationName}.attached";
+        $data = [
+            'id' => $model->id,
+            'relation_ids' => $ids
+        ];
+
+        try {
+            $this->publish($routingKey, $data);
+        } catch (Exception $exception) {
+            $this->reportException([
+                'modelName' => $modelName,
+                'id' => $model->id,
+                'action' => 'attached',
+                'exception' => $exception
+            ]);
+        }
+    }
+
     
     public function restored(Model $model)
     {
