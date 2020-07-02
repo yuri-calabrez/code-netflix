@@ -25,7 +25,7 @@
     "object-to-formdata": "^3.0.5",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
-    "react-hook-form": "^3.29.4",
+    "react-hook-form": "^5.5.3",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.3.0",

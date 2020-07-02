@@ -23,6 +23,7 @@ class CastMember extends Model
     protected $casts = ['id' => 'string'];
 
     public $incrementing = false;
+    protected $keyType = 'string';
 
     public static $types = [
         self::TYPE_DIRECTOR,

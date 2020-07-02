@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { TextField, Checkbox, FormControlLabel, Grid, Typography, useMediaQuery, useTheme, Card, CardContent, makeStyles, Theme, FormHelperText } from '@material-ui/core'
-import useForm from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import videoHttp from '../../../util/http/video-http'
 import * as yup from '../../../util/vendor/yup'
 import { useParams, useHistory } from 'react-router-dom'
@@ -90,7 +90,17 @@ const Form = () => {
         watch,
         triggerValidation,
         formState
-    } = useForm({
+    } = useForm<{
+        title,
+        description,
+        year_launched,
+        duration,
+        rating,
+        cast_members,
+        categories,
+        genres,
+        opened
+    }>({
         validationSchema,
         defaultValues: {
             genres: [],
@@ -117,7 +127,7 @@ const Form = () => {
     const categoryRef = React.useRef() as React.MutableRefObject<CategoryFieldComponent>
     const genreRef = React.useRef() as React.MutableRefObject<GenreFieldComponent>
 
-    const uploads = useSelector<UploadModule, Upload[]>((state) => state.upload.uploads)
+  
     const dispatch = useDispatch()
 
     const resetForm = React.useCallback((data) => {
@@ -208,6 +218,10 @@ const Form = () => {
         const files: FileInfo[] = fileFields
             .filter(fileField => getValues()[fileField])
             .map(fileField => ({fileField, file: getValues()[fileField]}))
+        console.log(files)
+        if(!files.length) {
+            return
+        }
 
         dispatch(Creators.addUpload({video, files}))
 
@@ -314,14 +328,6 @@ const Form = () => {
                                 error={errors.categories}
                                 disabled={loading}
                             />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <FormHelperText>
-                                Escolha os gêneros do vídeo
-                            </FormHelperText>
-                            <FormHelperText>
-                                Escolha pelo menos uma categoria de cada gênero
-                            </FormHelperText>
                         </Grid>
                     </Grid>
                 </Grid>
