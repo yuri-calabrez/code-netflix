@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\ModelFilters\CastMemberFilter;
+use App\Traits\SerializeDateToIso8601Trait;
 use App\Traits\UuidTrait;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CastMember extends Model
 {
-    use SoftDeletes, UuidTrait, Filterable;
+    use SoftDeletes, UuidTrait, Filterable, SerializeDateToIso8601Trait;
 
     const TYPE_DIRECTOR = 1;
     const TYPE_ACTOR = 2;
@@ -22,6 +23,7 @@ class CastMember extends Model
     protected $casts = ['id' => 'string'];
 
     public $incrementing = false;
+    protected $keyType = 'string';
 
     public static $types = [
         self::TYPE_DIRECTOR,

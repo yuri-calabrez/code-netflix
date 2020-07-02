@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { TextField, Checkbox, FormControlLabel } from '@material-ui/core'
-import useForm from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import categoryHttp from '../../util/http/category-http'
 import * as yup from '../../util/vendor/yup'
 import { useParams, useHistory } from 'react-router-dom'
@@ -28,7 +28,7 @@ const Form = () => {
         reset, 
         watch,
         triggerValidation
-    } = useForm({
+    } = useForm<{name, is_active}>({
         validationSchema,
         defaultValues: {
             is_active: true
@@ -110,7 +110,7 @@ const Form = () => {
             GridItemProps={{xs: 12, md: 6}}
             onSubmit={handleSubmit(onSubmit)}
         >
-        <TextField
+            <TextField
                 name="name"
                 label="Nome"
                 fullWidth

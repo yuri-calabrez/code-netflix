@@ -24,42 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
 const Uploads = () => {
     const classes = useStyles()
     const uploads = useSelector<UploadModule, Upload[]>((state) => state.upload.uploads)
-    const dispatch = useDispatch()
-    React.useMemo(() => {
-        setTimeout(() => {
-            const obj: any = {
-                video: {
-                    id: '4cee7870-12eb-43f0-bd44-1d1a053a4b0e',
-                    title: 'teste'
-                },
-                files: [
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'trailer_file'
-                    },
-                    {
-                        file: new File([""], "teste.mp4"),
-                        fileField: 'video_file'
-                    }
-                ]
-            }
-            dispatch(Creators.addUpload(obj))
-            const progress1 = {
-                fileField: 'trailer_file',
-                progress: 10,
-                video: {id: '1'}
-            } as any
-    
-            dispatch(Creators.updateProgress(progress1))
-    
-            const progress2 = {
-                fileField: 'video_file',
-                progress: 20,
-                video: {id: '1'}
-            } as any 
-            dispatch(Creators.updateProgress(progress2))
-        }, 1000)
-    }, [true])
 
     return (
         <Page title="Uploads">

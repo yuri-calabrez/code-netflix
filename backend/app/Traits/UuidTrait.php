@@ -10,7 +10,7 @@ trait UuidTrait
     {
         parent::boot();
         static::creating(function($obj){
-            $obj->id = Uuid::uuid4();
+            $obj->id = Uuid::uuid4()->toString();
         });
     }
 }
