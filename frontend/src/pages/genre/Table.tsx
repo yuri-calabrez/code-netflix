@@ -107,6 +107,27 @@ const Table = () => {
     const loading = React.useContext(LoadingContext)
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
+    const extraFilter = React.useMemo(() =>({
+        createValidationSchema: () => {
+            return yup.object().shape({
+                categories: yup.mixed()
+                    .nullable()
+                    .transform(value => !value || value === '' ? undefined : value.split(','))
+                    .default(null)
+            })
+        },
+        formatSearchParams: (debouncedFilterState) => {
+            return debouncedFilterState.extraFilter ? {
+                ...(debouncedFilterState.extraFilter.categories &&
+                    {categories: debouncedFilterState.extraFilter.categories.join(',')})
+            } : undefined
+        },
+        getStateFromUrl: (queryParams) => {
+            return {
+                categories: queryParams.get('categories')
+            }
+        }
+    }), [])
 
     const {
         columns,
@@ -121,27 +142,7 @@ const Table = () => {
             rowsPerPage,
             rowsPerPageOptions,
             tableRef,
-            extraFilter: {
-                createValidationSchema: () => {
-                    return yup.object().shape({
-                        categories: yup.mixed()
-                            .nullable()
-                            .transform(value => !value || value === '' ? undefined : value.split(','))
-                            .default(null)
-                    })
-                },
-                formatSearchParams: (debouncedFilterState) => {
-                    return debouncedFilterState.extraFilter ? {
-                        ...(debouncedFilterState.extraFilter.categories &&
-                            {categories: debouncedFilterState.extraFilter.categories.join(',')})
-                    } : undefined
-                },
-                getStateFromUrl: (queryParams) => {
-                    return {
-                        categories: queryParams.get('categories')
-                    }
-                }
-            }
+            extraFilter
         })
 
     const indexColumnCategories = columns.findIndex(c => c.name === 'categories')
@@ -209,7 +210,6 @@ const Table = () => {
                     }
                 })
                 if (subscribed.current) {
-                    console.log(data.data)
                     setData(data.data)
                     setTotalRecords(data.meta.total)
                     if (openDeleteDialog) {

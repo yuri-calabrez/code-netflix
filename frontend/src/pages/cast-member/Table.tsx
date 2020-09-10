@@ -96,6 +96,30 @@ const Table = () => {
     const loading = React.useContext(LoadingContext)
     const {openDeleteDialog, setOpenDeleteDialog, rowsToDelete, setRowsToDelete} = useDeleteCollection()
     const tableRef = React.useRef() as React.MutableRefObject<MuiDataTableRefComponent>
+    const extraFilter = React.useMemo(() => ({
+        createValidationSchema: () => {
+            return yup.object().shape({
+                type: yup.string()
+                    .nullable()
+                    .transform(value => !value || castMemberNames.includes(value) ? undefined : value)
+                    .default(null)
+            })
+        },
+        formatSearchParams: (debouncedFilterState) => {
+            return debouncedFilterState.extraFilter ? {
+                ...(
+                    debouncedFilterState.extraFilter.type && {
+                        type: debouncedFilterState.extraFilter.type
+                    }
+                ) 
+            } : undefined
+        },
+        getStateFromUrl: (queryParams) => {
+            return {
+                type: queryParams.get('type')
+            }
+        }
+    }), [])
 
     const {
         columns,
@@ -110,30 +134,7 @@ const Table = () => {
             rowsPerPage,
             rowsPerPageOptions,
             tableRef,
-            extraFilter: {
-                createValidationSchema: () => {
-                    return yup.object().shape({
-                        type: yup.string()
-                            .nullable()
-                            .transform(value => !value || castMemberNames.includes(value) ? undefined : value)
-                            .default(null)
-                    })
-                },
-                formatSearchParams: (debouncedFilterState) => {
-                    return debouncedFilterState.extraFilter ? {
-                        ...(
-                            debouncedFilterState.extraFilter.type && {
-                                type: debouncedFilterState.extraFilter.type
-                            }
-                        ) 
-                    } : undefined
-                },
-                getStateFromUrl: (queryParams) => {
-                    return {
-                        type: queryParams.get('type')
-                    }
-                }
-            }
+            extraFilter
         })
     const indexColumnType = columns.findIndex(c => c.name === 'type')
     const columnType = columns[indexColumnType]
