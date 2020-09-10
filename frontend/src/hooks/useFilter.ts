@@ -1,4 +1,4 @@
-import {useState, useReducer, Dispatch, Reducer, useEffect, useMemo} from 'react'
+import {useState, useReducer, Dispatch, Reducer, useEffect, useMemo, useCallback} from 'react'
 import reducer, { Creators } from '../store/filter'
 import { State as FilterState, Actions as FilterActions } from '../store/filter/types'
 import { MUIDataTableColumn } from 'mui-datatables'
@@ -39,6 +39,7 @@ interface UseFilterOptions {
 export default function useFilter(options: UseFilterOptions) {
     const history = useHistory()
     const location = useLocation()
+    const {search: locationSearch, pathname: locationPathname, state: locationState} = location
     const {rowsPerPage, rowsPerPageOptions, columns, extraFilter} = options
     const schema = useMemo(() => {
         return yup.object().shape<FilterState>({
@@ -75,7 +76,7 @@ export default function useFilter(options: UseFilterOptions) {
     }, [rowsPerPageOptions, rowsPerPage, columns, extraFilter])
 
     const stateFromUrl = useMemo<FilterState>(() => {
-        const queryParams = new URLSearchParams(location.search.substr(1))
+        const queryParams = new URLSearchParams(locationSearch.substr(1))
         return schema.cast({
             search: queryParams.get('search'),
             pagination: {
@@ -92,23 +93,83 @@ export default function useFilter(options: UseFilterOptions) {
                 }
             )
         })
-    }, [location, schema, extraFilter])
-    
+    }, [locationSearch, schema, extraFilter])
+
+    const cleanSearchText = useCallback((text) => {
+        let newText = text
+        if (text && text.value !== undefined) {
+            newText = text.value
+        }
+
+        return newText
+    }, [])
+
+    const formatSearchParams = useCallback((state, extraFilter) => {
+        const search = cleanSearchText(state.search)
+
+        return {
+            ...(search && search !== '' && {search: search}),
+            ...(state.pagination.page !== 1 && {page: state.pagination.page}),
+            ...(state.pagination.per_page !== 15 && {per_page: state.pagination.per_page}),
+            ...(state.order.sort && {
+                sort: state.order.sort,
+                dir: state.order.dir
+            }),
+            ...(extraFilter && extraFilter.formatSearchParams(state)) 
+
+        }
+    }, [cleanSearchText])
+
     const filterManager = new FilterManager({...options, history, schema})
     const INITIAL_STATE = stateFromUrl
     const [totalRecords, setTotalRecords] = useState<number>(0)
     const [filterState, dispatch] = useReducer<Reducer<FilterState, FilterActions>>(reducer, INITIAL_STATE)
     const [debouncedFilterState] = useDebounce(filterState, options.debounceTime)
+
+    useEffect(() => {
+        history.replace({
+            pathname: locationPathname,
+            search: "?" + new URLSearchParams(formatSearchParams(stateFromUrl, extraFilter)),
+            state: stateFromUrl 
+        })
+    }, [history, locationPathname, formatSearchParams, stateFromUrl, extraFilter])
+
+    useEffect(() => {
+        const newLocation = {
+            pathname: locationPathname,
+            search: "?" + new URLSearchParams(formatSearchParams(debouncedFilterState, extraFilter)),
+            state: {
+                ...debouncedFilterState,
+                search: cleanSearchText(debouncedFilterState.search)
+            }
+        }
+        const oldState = locationState
+        const nextState = debouncedFilterState
+        if (isEqual(oldState, nextState)) {
+            return
+        }
+
+        history.push(newLocation)
+    }, [
+        history, 
+        locationPathname, 
+        locationState, 
+        debouncedFilterState, 
+        formatSearchParams, 
+        cleanSearchText, 
+        extraFilter
+    ])
+    
+    
     filterManager.state = filterState
+    filterManager.debounceState = debouncedFilterState
     filterManager.dispatch = dispatch
     filterManager.applyOrderInColumns()
 
-    useEffect(() => {
-        filterManager.replaceHistory()
-    }, [])
 
     return {
         columns: filterManager.columns,
+        cleanSearchText,
         filterManager,
         filterState,
         debouncedFilterState,
@@ -177,14 +238,6 @@ export class FilterManager {
         })
     }
 
-    cleanSearchText(text) {
-        let newText = text
-        if (text && text.value !== undefined) {
-            newText = text.value
-        }
-
-        return newText
-    }
 
     changeExtraFilter(data) {
         this.dispatch(Creators.updateExtraFilter(data))
@@ -201,47 +254,6 @@ export class FilterManager {
         this.resePagination()
     }
 
-    replaceHistory() {
-        this.history.replace({
-            pathname: this.history.location.pathname,
-            search: "?" + new URLSearchParams(this.formatSearchParams() as any),
-            state: this.state 
-        })
-    }
-
-    pushHistory() {
-        const newLocation = {
-            pathname: this.history.location.pathname,
-            search: "?" + new URLSearchParams(this.formatSearchParams() as any),
-            state: {
-                ...this.state,
-                search: this.cleanSearchText(this.state.search)
-            }
-        }
-        const oldState = this.history.location.state
-        const nextState = this.state
-        if (isEqual(oldState, nextState)) {
-            return
-        }
-
-        this.history.push(newLocation)
-    }
-
-    private formatSearchParams() {
-        const search = this.cleanSearchText(this.state.search)
-
-        return {
-            ...(search && search !== '' && {search: search}),
-            ...(this.state.pagination.page !== 1 && {page: this.state.pagination.page}),
-            ...(this.state.pagination.per_page !== 15 && {per_page: this.state.pagination.per_page}),
-            ...(this.state.order.sort && {
-                sort: this.state.order.sort,
-                dir: this.state.order.dir
-            }),
-            ...(this.extraFilter && this.extraFilter.formatSearchParams(this.state)) 
-
-        }
-    }
 
     private resePagination() {
         this.tableRef.current.changeRowsPerPage(this.rowsPerPage)

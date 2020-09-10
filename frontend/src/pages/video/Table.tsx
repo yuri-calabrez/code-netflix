@@ -100,6 +100,7 @@ const Table = () => {
 
     const {
         columns,
+        cleanSearchText,
         filterManager,
         filterState,
         debouncedFilterState,
@@ -114,13 +115,12 @@ const Table = () => {
 
     React.useEffect(() => {
         subscribed.current = true
-        filterManager.pushHistory()
         getData()
         return () => {
             subscribed.current = false
         }
     }, [
-        filterManager.cleanSearchText(debouncedFilterState.search),
+        cleanSearchText(debouncedFilterState.search),
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order
@@ -130,7 +130,7 @@ const Table = () => {
             try {
                 const {data} = await videoHttp.list<ListResponse<Video>>({
                     queryParams: {
-                        search: filterManager.cleanSearchText(debouncedFilterState.search),
+                        search: cleanSearchText(debouncedFilterState.search),
                         page: debouncedFilterState.pagination.page,
                         per_page: debouncedFilterState.pagination.per_page,
                         sort: debouncedFilterState.order.sort,

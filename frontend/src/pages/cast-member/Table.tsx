@@ -99,6 +99,7 @@ const Table = () => {
 
     const {
         columns,
+        cleanSearchText,
         filterManager,
         filterState,
         debouncedFilterState,
@@ -146,13 +147,12 @@ const Table = () => {
 
     React.useEffect(() => {
         subscribed.current = true
-        filterManager.pushHistory()
         getData()
         return () => {
             subscribed.current = false
         }
     }, [
-        filterManager.cleanSearchText(debouncedFilterState.search),
+        cleanSearchText(debouncedFilterState.search),
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order,
@@ -163,7 +163,7 @@ const Table = () => {
             try {
                 const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
                     queryParams: {
-                        search: filterManager.cleanSearchText(filterState.search),
+                        search: cleanSearchText(filterState.search),
                         page: filterState.pagination.page,
                         per_page: filterState.pagination.per_page,
                         sort: filterState.order.sort,
