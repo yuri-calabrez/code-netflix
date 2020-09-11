@@ -100,7 +100,7 @@ const rowsPerPageOptions =  [10, 25, 50]
 
 const Table = () => {
 
-    const snackbar = useSnackbar()
+    const {enqueueSnackbar} = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Genre[]>([])
     const [categories, setCategories] = React.useState<Category[]>([])
@@ -144,7 +144,7 @@ const Table = () => {
             tableRef,
             extraFilter
         })
-
+    const searchText = cleanSearchText(debouncedFilterState.search)
     const indexColumnCategories = columns.findIndex(c => c.name === 'categories')
     const columnCategories = columns[indexColumnCategories]
     const categoriesFilterValue = filterState.extraFilter && filterState.extraFilter.categories;
@@ -168,7 +168,7 @@ const Table = () => {
                 }
             } catch (error) {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
+                enqueueSnackbar('Não foi possível carregar as informações.', {
                     variant: 'error'
                 })
             }
@@ -177,54 +177,69 @@ const Table = () => {
         return () => {
             isSubscribed = false
         }
-    }, [])
+    }, [columnCategories.options, enqueueSnackbar])
+
+    const getData = React.useCallback(async ({search, page, per_page, sort, dir, type}) => {
+        try {
+            const {data} = await genreHttp.list<ListResponse<Genre>>({
+                queryParams: {
+                    search,
+                    page,
+                    per_page,
+                    sort,
+                    dir,
+                    ...(
+                        type &&
+                        {
+                            categories: type
+                        }
+                    )
+                }
+            })
+            if (subscribed.current) {
+                setData(data.data)
+                setTotalRecords(data.meta.total)
+                if (openDeleteDialog) {
+                    setOpenDeleteDialog(false)
+                }
+            }
+        } catch (error) {
+            console.error(error)
+            if (genreHttp.isCancelledRequest(error)) {
+                enqueueSnackbar('Não foi possível carregar as informações.', {
+                    variant: 'error'
+                })
+            }
+        }
+    }, [enqueueSnackbar, setTotalRecords])
 
     React.useEffect(() => {
         subscribed.current = true
-        getData()
+        getData({
+            search: searchText,
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+            ...(
+                debouncedFilterState.extraFilter &&
+                debouncedFilterState.extraFilter.categories && {
+                    categories: debouncedFilterState.extraFilter.categories.join(',')
+                }
+            )
+        })
         return () => {
             subscribed.current = false
         }
     }, [
-        cleanSearchText(debouncedFilterState.search),
+        getData,
+        searchText,
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order,
-        JSON.stringify(debouncedFilterState.extraFilter)
+        debouncedFilterState.extraFilter
     ])
 
-    async function getData() {
-            try {
-                const {data} = await genreHttp.list<ListResponse<Genre>>({
-                    queryParams: {
-                        search: cleanSearchText(filterState.search),
-                        page: filterState.pagination.page,
-                        per_page: filterState.pagination.per_page,
-                        sort: filterState.order.sort,
-                        dir: filterState.order.dir,
-                        ...(
-                            debouncedFilterState.extraFilter &&
-                            debouncedFilterState.extraFilter.categories &&
-                            {categories: debouncedFilterState.extraFilter.categories.join(',')}
-                        )
-                    }
-                })
-                if (subscribed.current) {
-                    setData(data.data)
-                    setTotalRecords(data.meta.total)
-                    if (openDeleteDialog) {
-                        setOpenDeleteDialog(false)
-                    }
-                }
-            } catch (error) {
-                console.error(error)
-                if (genreHttp.isCancelledRequest(error)) {
-                    snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
-                        variant: 'error'
-                    })
-                }
-            }
-    }
 
     function deleteRows(confirmed: boolean) {
         if (!confirmed) {
@@ -240,19 +255,19 @@ const Table = () => {
         genreHttp
             .deleteCollection({ids})
             .then(response => {
-                snackbar.enqueueSnackbar('Registros excluidos com sucesso!', {
+                enqueueSnackbar('Registros excluidos com sucesso!', {
                     variant: 'success'
                 })
                 if (rowsToDelete.data.length === filterState.pagination.per_page && filterState.pagination.page > 1) {
                     const page = filterState.pagination.page - 2
                     filterManager.changePage(page)
                 } else {
-                    getData()
+                    //getData()
                 }
             })
             .catch(error => {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+                enqueueSnackbar('Não foi possível excluir os registros', {
                     variant: 'error'
                 })
             })

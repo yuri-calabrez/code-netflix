@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { TextField, Checkbox, FormControlLabel, Grid, Typography, useMediaQuery, useTheme, Card, CardContent, makeStyles, Theme, FormHelperText } from '@material-ui/core'
+import { TextField, Checkbox, FormControlLabel, Grid, Typography, useMediaQuery, useTheme, Card, CardContent, makeStyles, Theme } from '@material-ui/core'
 import { useForm } from 'react-hook-form'
 import videoHttp from '../../../util/http/video-http'
 import * as yup from '../../../util/vendor/yup'
@@ -17,8 +17,8 @@ import {omit, zipObject} from 'lodash'
 import { InputFileComponent } from '../../../components/InputFile'
 import useSnackbarFormError from '../../../hooks/useSnackbarFormError'
 import SnackbarUpload from '../../../components/SnackbarUpload'
-import { useSelector, useDispatch } from 'react-redux'
-import { Upload, UploadModule, FileInfo } from '../../../store/upload/types'
+import { useDispatch } from 'react-redux'
+import { FileInfo } from '../../../store/upload/types'
 import { Creators } from '../../../store/upload'
 
 const validationSchema = yup.object().shape({

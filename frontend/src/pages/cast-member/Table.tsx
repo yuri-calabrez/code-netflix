@@ -90,7 +90,7 @@ const rowsPerPageOptions =  [10, 25, 50]
 
 const Table = () => {
 
-    const snackbar = useSnackbar()
+    const {enqueueSnackbar} = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<CastMember[]>([])
     const loading = React.useContext(LoadingContext)
@@ -136,6 +136,8 @@ const Table = () => {
             tableRef,
             extraFilter
         })
+
+    const searchText = cleanSearchText(debouncedFilterState.search)
     const indexColumnType = columns.findIndex(c => c.name === 'type')
     const columnType = columns[indexColumnType]
     const typeFilterValue = filterState.extraFilter && filterState.extraFilter.type as never
@@ -146,52 +148,69 @@ const Table = () => {
         serverSideFilterList[indexColumnType] = [typeFilterValue]
     }
 
+    const getData = React.useCallback(async ({search, page ,per_page, sort, dir, type}) => {
+        try {
+            const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
+                queryParams: {
+                    search,
+                    page,
+                    per_page,
+                    sort,
+                    dir,
+                    ...(
+                        type &&
+                        {
+                            type: invert(CastMemberTypeMap)[
+                                type
+                            ],
+                        }
+                    )
+                }
+            })
+            if (subscribed.current) {
+                setData(data.data)
+                setTotalRecords(data.meta.total)
+                if (openDeleteDialog) {
+                    setOpenDeleteDialog(false)
+                }
+            }
+        } catch (error) {
+            console.error(error)
+            if (castMemberHttp.isCancelledRequest(error)) {
+                enqueueSnackbar('Não foi possível carregar as informações.', {
+                    variant: 'error'
+                })
+            }
+        }
+    }, [openDeleteDialog, enqueueSnackbar])
+
     React.useEffect(() => {
         subscribed.current = true
-        getData()
+        getData({
+            search: searchText,
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+            ...(
+                debouncedFilterState.extraFilter &&
+                debouncedFilterState.extraFilter.type && {
+                    type: debouncedFilterState.extraFilter.type
+                }
+            )
+        })
         return () => {
             subscribed.current = false
         }
     }, [
-        cleanSearchText(debouncedFilterState.search),
+        getData,
+        searchText,
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order,
-        JSON.stringify(debouncedFilterState.extraFilter)
+        debouncedFilterState.extraFilter
     ])
 
-    async function getData() {
-            try {
-                const {data} = await castMemberHttp.list<ListResponse<CastMember>>({
-                    queryParams: {
-                        search: cleanSearchText(filterState.search),
-                        page: filterState.pagination.page,
-                        per_page: filterState.pagination.per_page,
-                        sort: filterState.order.sort,
-                        dir: filterState.order.dir,
-                        ...(
-                            debouncedFilterState.extraFilter &&
-                            debouncedFilterState.extraFilter.type &&
-                            {type: invert(CastMemberTypeMap)[debouncedFilterState.extraFilter.type]}
-                        )
-                    }
-                })
-                if (subscribed.current) {
-                    setData(data.data)
-                    setTotalRecords(data.meta.total)
-                    if (openDeleteDialog) {
-                        setOpenDeleteDialog(false)
-                    }
-                }
-            } catch (error) {
-                console.error(error)
-                if (castMemberHttp.isCancelledRequest(error)) {
-                    snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
-                        variant: 'error'
-                    })
-                }
-            }
-    }
 
     function deleteRows(confirmed: boolean) {
         if (!confirmed) {
@@ -207,19 +226,19 @@ const Table = () => {
         castMemberHttp
             .deleteCollection({ids})
             .then(response => {
-                snackbar.enqueueSnackbar('Registros excluidos com sucesso!', {
+                enqueueSnackbar('Registros excluidos com sucesso!', {
                     variant: 'success'
                 })
                 if (rowsToDelete.data.length === filterState.pagination.per_page && filterState.pagination.page > 1) {
                     const page = filterState.pagination.page - 2
                     filterManager.changePage(page)
                 } else {
-                    getData()
+                    //getData()
                 }
             })
             .catch(error => {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+                enqueueSnackbar('Não foi possível excluir os registros', {
                     variant: 'error'
                 })
             })

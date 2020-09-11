@@ -77,7 +77,7 @@ const rowsPerPageOptions =  [10, 25, 50]
 
 const Table = () => {
 
-    const snackbar = useSnackbar()
+    const {enqueueSnackbar} = useSnackbar()
     const subscribed = React.useRef(true)
     const [data, setData] = React.useState<Category[]>([])
     const loading = React.useContext(LoadingContext)
@@ -99,54 +99,63 @@ const Table = () => {
             tableRef
         })
 
+    const searchText = cleanSearchText(debouncedFilterState.search)
+    const getData = React.useCallback(async ({search, page, per_page, sort, dir}) => {
+        try {
+            const {data} = await categoryHttp.list<ListResponse<Category>>({
+                queryParams: {
+                    search,
+                    page,
+                    per_page,
+                    sort,
+                    dir
+                }
+            })
+            if (subscribed.current) {
+                setData(data.data)
+                setTotalRecords(data.meta.total)
+                if (openDeleteDialog) {
+                    setOpenDeleteDialog(false)
+                }
+                // setSearchState((prevState => ({
+                //     ...prevState,
+                //     pagination: {
+                //         ...prevState.pagination,
+                //         total: data.meta.total
+                //     }
+                // })))
+            }
+        } catch (error) {
+            console.error(error)
+            if (categoryHttp.isCancelledRequest(error)){
+                return
+            }
+            enqueueSnackbar('Não foi possível carregar as informações.', {
+                variant: 'error'
+            })
+        }
+    }, [enqueueSnackbar, setTotalRecords])
+
     React.useEffect(() => {
         subscribed.current = true
-        getData()
+        getData({
+            search: searchText,
+            page: debouncedFilterState.pagination.page,
+            per_page: debouncedFilterState.pagination.per_page,
+            sort: debouncedFilterState.order.sort,
+            dir: debouncedFilterState.order.dir,
+        })
         return () => {
             subscribed.current = false
         }
     }, [
-        cleanSearchText(debouncedFilterState.search),
+        getData,
+        searchText,
         debouncedFilterState.pagination.page,
         debouncedFilterState.pagination.per_page,
         debouncedFilterState.order
     ])
 
-    async function getData() {
-            try {
-                const {data} = await categoryHttp.list<ListResponse<Category>>({
-                    queryParams: {
-                        search: cleanSearchText(filterState.search),
-                        page: filterState.pagination.page,
-                        per_page: filterState.pagination.per_page,
-                        sort: filterState.order.sort,
-                        dir: filterState.order.dir
-                    }
-                })
-                if (subscribed.current) {
-                    setData(data.data)
-                    setTotalRecords(data.meta.total)
-                    if (openDeleteDialog) {
-                        setOpenDeleteDialog(false)
-                    }
-                    // setSearchState((prevState => ({
-                    //     ...prevState,
-                    //     pagination: {
-                    //         ...prevState.pagination,
-                    //         total: data.meta.total
-                    //     }
-                    // })))
-                }
-            } catch (error) {
-                console.error(error)
-                if (categoryHttp.isCancelledRequest(error)){
-                    return
-                }
-                snackbar.enqueueSnackbar('Não foi possível carregar as informações.', {
-                    variant: 'error'
-                })
-            }
-    }
 
     function deleteRows(confirmed: boolean) {
         if (!confirmed) {
@@ -162,19 +171,25 @@ const Table = () => {
         categoryHttp
             .deleteCollection({ids})
             .then(response => {
-                snackbar.enqueueSnackbar('Registros excluidos com sucesso!', {
+                enqueueSnackbar('Registros excluidos com sucesso!', {
                     variant: 'success'
                 })
                 if (rowsToDelete.data.length === filterState.pagination.per_page && filterState.pagination.page > 1) {
                     const page = filterState.pagination.page - 2
                     filterManager.changePage(page)
                 } else {
-                    getData()
+                    getData({
+                        search: searchText,
+                        page: debouncedFilterState.pagination.page,
+                        per_page: debouncedFilterState.pagination.per_page,
+                        sort: debouncedFilterState.order.sort,
+                        dir: debouncedFilterState.order.dir,
+                    })
                 }
             })
             .catch(error => {
                 console.error(error)
-                snackbar.enqueueSnackbar('Não foi possível excluir os registros', {
+                enqueueSnackbar('Não foi possível excluir os registros', {
                     variant: 'error'
                 })
             })
