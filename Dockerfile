@@ -1,5 +1,7 @@
 FROM php:7.3.6-fpm-alpine3.10
 
+RUN apk add --no-cache shadow
+
 RUN apk add --no-cache openssl \
     bash \ 
     mysql-client \
@@ -28,6 +30,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN ln -s public html
 RUN chown -R www-data:www-data /var/www
+
+RUN usermod -u 1000 www-data
+USER www-data
 
 EXPOSE 9000
 
