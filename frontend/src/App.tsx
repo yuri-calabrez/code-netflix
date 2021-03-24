@@ -9,11 +9,13 @@ import theme from './theme';
 import { SnackBarProvider } from './components/SnackBarProvider';
 import Spinner from './components/Spinner';
 import { LoadingProvider } from './components/loading/LoadigProvider';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
+import { keycloak, keycloakConfig } from './util/auth';
 
 
 const App: React.FC = () => {
   return (
-    <React.Fragment>
+    <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakConfig}>
       <LoadingProvider>
         <MuiThemeProvider theme={theme}>
           <SnackBarProvider>
@@ -29,7 +31,7 @@ const App: React.FC = () => {
           </SnackBarProvider>
         </MuiThemeProvider>
       </LoadingProvider>
-    </React.Fragment>
+    </ReactKeycloakProvider>
   );
 }
 
