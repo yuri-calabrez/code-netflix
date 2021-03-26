@@ -14,6 +14,7 @@ import useFilter from '../../hooks/useFilter'
 import useDeleteCollection from '../../hooks/useDeleteCollection'
 import DeleteDialog from '../../components/DeleteDialog'
 import LoadingContext from '../../components/loading/LoadigContext'
+import { useKeycloak } from '@react-keycloak/web'
 
 const columnsDefinition: TableColumn[] = [
     {
