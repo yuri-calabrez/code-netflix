@@ -9,6 +9,7 @@ import CastMemberForm from "../pages/cast-member/PageForm"
 import VideoList from "../pages/video/PageList"
 import VideoForm from "../pages/video/PageForm"
 import Uploads from "../pages/uploads";
+import Login from "../pages/Login";
 
 export interface MyRouteProps extends RouteProps {
     name: string
@@ -17,6 +18,14 @@ export interface MyRouteProps extends RouteProps {
 }
 
 const routes: MyRouteProps[] = [
+    {
+        name: 'login',
+        label: 'Login',
+        path: '/login',
+        component: Login,
+        exact: true,
+        auth: false
+    },
     {
         name: 'dashboard',
         label: 'Dashboard',
