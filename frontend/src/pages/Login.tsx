@@ -1,6 +1,7 @@
 import { useKeycloak } from '@react-keycloak/web'
 import * as React from 'react'
 import { Redirect, useLocation } from 'react-router-dom'
+import Waiting from '../components/Waiting'
 
 interface LoginProps {
 
@@ -20,7 +21,7 @@ const Login: React.FC<LoginProps> = (props) => {
         redirectUri: `${window.location.origin}${process.env.REACT_APP_BASENAME}${from.pathname}`
     })
     
-    return <div>Agora vai</div>
+    return <Waiting/>
 }
 
 export default Login
