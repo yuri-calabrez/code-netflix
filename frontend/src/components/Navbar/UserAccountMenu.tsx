@@ -1,17 +1,17 @@
 import * as React from 'react'
 import { IconButton, MenuItem, Menu as MuiMenu, Divider } from '@material-ui/core'
 import AccountBox from '@material-ui/icons/AccountBox'
-import { useKeycloak } from '@react-keycloak/web'
+import { useHasRealmRole } from '../../hooks/useHasRole'
 
 const UserAccountMenu = () => {
-    const {keycloak, initialized} = useKeycloak()
+    const hasCatalogAdmin = useHasRealmRole('catalog-admin')
     const [anchorEl, setAnchorEl] = React.useState(null)
     const isOpen = Boolean(anchorEl)
 
     const handleOpen = (event: any) => setAnchorEl(event.currentTarget)
     const handleClose = () => setAnchorEl(null)
 
-    if (!initialized || !keycloak.authenticated) {
+    if (!hasCatalogAdmin) {
         return null
     }
 

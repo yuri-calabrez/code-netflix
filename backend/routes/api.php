@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::group(['namespace' => 'Api', 'middleware' => 'auth'], function () {
+Route::group(['namespace' => 'Api', 'middleware' => ['auth', 'can:catalog-admin']], function () {
     Route::resource('categories', 'CategoryController', ['except' => ['create', 'edit']]);
     Route::delete('categories', 'CategoryController@destroyCollection');
     Route::resource('genres', 'GenreController', ['except' => ['create', 'edit']]);
