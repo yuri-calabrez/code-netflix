@@ -1,10 +1,12 @@
 import * as React from 'react'
-import { IconButton, MenuItem, Menu as MuiMenu, Divider } from '@material-ui/core'
+import { IconButton, MenuItem, Menu as MuiMenu, Divider, Link } from '@material-ui/core'
 import AccountBox from '@material-ui/icons/AccountBox'
-import { useHasRealmRole } from '../../hooks/useHasRole'
+import { useHasClient, useHasRealmRole } from '../../hooks/useHasRole'
+import { keycloakLinks } from '../../util/auth'
 
 const UserAccountMenu = () => {
     const hasCatalogAdmin = useHasRealmRole('catalog-admin')
+    const hasAdminRealm = useHasClient('realm-manegement')
     const [anchorEl, setAnchorEl] = React.useState(null)
     const isOpen = Boolean(anchorEl)
 
@@ -39,7 +41,28 @@ const UserAccountMenu = () => {
             >
                 <MenuItem disabled={true}> Fulano da Silva </MenuItem>
                 <Divider/>
-                <MenuItem> Minha Conta </MenuItem>
+                {hasAdminRealm && (
+                    <MenuItem 
+                        component={Link} 
+                        href={keycloakLinks.adminConsole} 
+                        target="_blank" 
+                        rel="noopener"
+                        color="textPrimary"
+                        onClick={handleClose}
+                    > 
+                        Auth. Admin
+                    </MenuItem>
+                )}
+                <MenuItem 
+                    component={Link} 
+                    href={keycloakLinks.accountConsole} 
+                    target="_blank" 
+                    rel="noopener"
+                    color="textPrimary"
+                    onClick={handleClose}
+                > 
+                    Minha Conta
+                </MenuItem>
                 <MenuItem> Logout </MenuItem>
             </MuiMenu>
         </React.Fragment>
